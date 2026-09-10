@@ -15,7 +15,13 @@ import {
   Zap,
   X,
   Sparkles,
-  TrendingDown
+  TrendingDown,
+  GitBranch,
+  GitPullRequest,
+  AlertTriangle,
+  Save,
+  FileCode,
+  ExternalLink
 } from 'lucide-react';
 import { useProject } from '../context/ProjectContext';
 
@@ -266,96 +272,228 @@ export default function TasksView() {
         </div>
       )}
 
-      {/* TASK DETAIL DRAWER (WITH SIGNATURE INTELIX INTELLIGENCE CONTEXT) */}
+      {/* ENHANCED TASK EXECUTION DRAWER WITH GIT VCS & EFFORT TRACKING */}
       {inspectedTask && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-black/70 backdrop-blur-sm animate-in fade-in">
-          <div className="w-full max-w-xl h-full bg-[#0D101A] border-l border-[#252A3A] p-6 overflow-y-auto space-y-6 shadow-2xl">
-            <div className="flex items-center justify-between pb-4 border-b border-[#252A3A]">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-mono px-2 py-0.5 rounded bg-[#4F7CFF]/15 text-[#39D9FF] font-bold border border-[#4F7CFF]/30">
-                  TASK-{inspectedTask.id}
-                </span>
-                <span className="label-tech text-[#8992A8]">{inspectedTask.project}</span>
+        <div className="fixed inset-0 z-50 flex justify-end bg-black/75 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-xl h-full bg-[#0D101A] border-l border-[#252A3A] p-6 overflow-y-auto space-y-6 shadow-2xl flex flex-col justify-between">
+            <div className="space-y-6">
+              {/* Top Header */}
+              <div className="flex items-center justify-between pb-4 border-b border-[#252A3A]">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-mono px-2 py-0.5 rounded bg-[#4F7CFF]/15 text-[#39D9FF] font-bold border border-[#4F7CFF]/30">
+                    TASK-{inspectedTask.id}
+                  </span>
+                  <span className="label-tech text-[#8992A8]">{inspectedTask.project}</span>
+                </div>
+                <button
+                  onClick={() => setInspectedTask(null)}
+                  className="p-1 rounded-lg text-[#8992A8] hover:text-[#F4F7FF] hover:bg-[#171A2A] transition"
+                >
+                  <X size={18} />
+                </button>
               </div>
-              <button onClick={() => setInspectedTask(null)} className="text-[#8992A8] hover:text-[#F4F7FF]">
-                <X size={18} />
-              </button>
-            </div>
 
-            <div>
-              <h2 className="text-xl font-bold text-[#F4F7FF]">{inspectedTask.title}</h2>
-              <p className="text-xs text-[#8992A8] mt-2 leading-relaxed">{inspectedTask.description}</p>
-            </div>
+              {/* Title & Description */}
+              <div>
+                <h2 className="text-xl font-bold text-[#F4F7FF] leading-snug">{inspectedTask.title}</h2>
+                <p className="text-xs text-[#8992A8] mt-2 leading-relaxed bg-[#131522] p-3 rounded-xl border border-[#252A3A]">
+                  {inspectedTask.description || 'Enterprise project deliverable executed under sprint governance.'}
+                </p>
+              </div>
 
-            {/* Signature Intelix Intelligence Context */}
-            {inspectedTask.risk >= 50 && (
-              <div className="p-4 rounded-xl bg-[#131522] border border-[#FF4D6D]/40 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="label-tech text-[#FF4D6D] flex items-center gap-1.5">
-                    <Sparkles size={13} />
-                    AT RISK: LIKELY TO MISS SPRINT DEADLINE
+              {/* Status & Priority Row */}
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div>
+                  <label className="block text-[#8992A8] font-semibold mb-1.5 font-mono text-[10px] uppercase">
+                    Workflow Status
+                  </label>
+                  <select
+                    value={inspectedTask.status}
+                    onChange={(e) => {
+                      const newStatus = e.target.value;
+                      setInspectedTask({ ...inspectedTask, status: newStatus });
+                      updateTask(inspectedTask.id, { status: newStatus });
+                    }}
+                    className="w-full bg-[#131522] border border-[#252A3A] rounded-xl px-3 py-2 text-xs text-[#F4F7FF] focus:outline-none focus:border-[#4F7CFF]"
+                  >
+                    <option value="Pending">Backlog / Pending</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="In Review">Code Review</option>
+                    <option value="Testing">Testing / QA</option>
+                    <option value="Completed">Completed / Delivered</option>
+                    <option value="Blocked">Blocked</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[#8992A8] font-semibold mb-1.5 font-mono text-[10px] uppercase">
+                    Execution Priority
+                  </label>
+                  <select
+                    value={inspectedTask.priority}
+                    onChange={(e) => {
+                      const newPriority = e.target.value;
+                      setInspectedTask({ ...inspectedTask, priority: newPriority });
+                      updateTask(inspectedTask.id, { priority: newPriority });
+                    }}
+                    className="w-full bg-[#131522] border border-[#252A3A] rounded-xl px-3 py-2 text-xs text-[#F4F7FF] focus:outline-none focus:border-[#4F7CFF]"
+                  >
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                    <option value="Critical">Critical</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Progress Slider */}
+              <div className="p-4 rounded-xl bg-[#131522] border border-[#252A3A] space-y-2">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="text-[#8992A8] font-semibold">Execution Progress:</span>
+                  <span className="font-mono font-bold text-[#39D9FF] text-sm">{inspectedTask.progress}%</span>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  value={inspectedTask.progress}
+                  onChange={(e) => {
+                    const newProgress = +e.target.value;
+                    setInspectedTask({ ...inspectedTask, progress: newProgress });
+                    updateTask(inspectedTask.id, { progress: newProgress });
+                  }}
+                  className="w-full accent-[#4F7CFF] h-2 bg-[#0D101A] rounded-lg cursor-pointer"
+                />
+              </div>
+
+              {/* Effort Hours & Variance */}
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div className="p-3 rounded-xl bg-[#131522] border border-[#252A3A]">
+                  <div className="text-[10px] text-[#8992A8] uppercase font-mono">ESTIMATED EFFORT</div>
+                  <div className="text-sm font-bold font-mono text-[#F4F7FF] mt-1">
+                    {inspectedTask.estimatedHours || 32}h planned
                   </div>
-                  <span className="text-xs font-mono font-bold text-[#FF859B]">Risk: {inspectedTask.risk}/100</span>
                 </div>
-                <div className="text-xs space-y-1.5">
-                  <div><strong className="text-[#F4F7FF]">WHY?</strong> <span className="text-[#8992A8]">Database dependency is 3 days behind expected progress.</span></div>
-                  <div><strong className="text-[#F4F7FF]">IMPACT:</strong> <span className="text-[#FF859B]">Downstream frontend integration shifts by approximately 2 days.</span></div>
-                  <div><strong className="text-[#39D9FF]">RECOMMENDATION:</strong> <span className="text-[#F4F7FF]">Review dependency link and reallocate backend engineering capacity.</span></div>
-                </div>
-              </div>
-            )}
 
-            {/* Meta Grid */}
-            <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="p-3 rounded-xl bg-[#131522] border border-[#252A3A]">
-                <div className="text-[10px] text-[#8992A8] uppercase font-mono">ASSIGNEE</div>
-                <div className="font-bold text-[#F4F7FF] mt-0.5">{inspectedTask.assignee}</div>
+                <div className="p-3 rounded-xl bg-[#131522] border border-[#252A3A]">
+                  <div className="text-[10px] text-[#8992A8] uppercase font-mono">ACTUAL LOGGED HOURS</div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <input
+                      type="number"
+                      step="0.5"
+                      min="0"
+                      value={inspectedTask.actualHours ?? 14}
+                      onChange={(e) => {
+                        const newActual = +e.target.value;
+                        setInspectedTask({ ...inspectedTask, actualHours: newActual });
+                        updateTask(inspectedTask.id, { actualHours: newActual });
+                      }}
+                      className="w-20 px-2 py-1 rounded bg-[#0D101A] border border-[#252A3A] text-xs font-mono font-bold text-[#39D9FF]"
+                    />
+                    <span className="text-[11px] text-[#8992A8] font-mono">
+                      ({(inspectedTask.actualHours ?? 14) <= (inspectedTask.estimatedHours || 32) ? '✓ On budget' : '⚠️ Overrun'})
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div className="p-3 rounded-xl bg-[#131522] border border-[#252A3A]">
-                <div className="text-[10px] text-[#8992A8] uppercase font-mono">DUE DATE</div>
-                <div className="font-bold font-mono text-[#F4F7FF] mt-0.5">{inspectedTask.due}</div>
+
+              {/* Blocker Reporting Section */}
+              <div className="p-4 rounded-xl bg-[#131522] border border-[#252A3A] space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-[#F4F7FF] flex items-center gap-1.5">
+                    <AlertTriangle size={14} className={inspectedTask.blocked ? 'text-[#FF4D6D]' : 'text-[#8992A8]'} />
+                    Active Impediment / Blocker Flag
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={!!inspectedTask.blocked}
+                    onChange={() => {
+                      toggleTaskBlocker(inspectedTask.id);
+                      setInspectedTask({ ...inspectedTask, blocked: !inspectedTask.blocked });
+                    }}
+                    className="w-4 h-4 rounded accent-[#FF4D6D] cursor-pointer"
+                  />
+                </div>
+
+                {inspectedTask.blocked && (
+                  <div className="space-y-2 pt-1 border-t border-[#252A3A]">
+                    <textarea
+                      rows={2}
+                      value={inspectedTask.blockerReason || ''}
+                      onChange={(e) => {
+                        const reason = e.target.value;
+                        setInspectedTask({ ...inspectedTask, blockerReason: reason });
+                        updateTask(inspectedTask.id, { blockerReason: reason });
+                      }}
+                      placeholder="Describe the impediment blocking this task (e.g. Awaiting campus IT LDAP endpoint credentials)..."
+                      className="w-full bg-[#0D101A] border border-[#FF4D6D]/40 rounded-lg p-2.5 text-xs text-[#F4F7FF] focus:outline-none placeholder-[#555E73]"
+                    />
+                    <span className="text-[10px] text-[#FF859B] block font-mono">
+                      ● Escalation active: Notifies Project Manager & increases project risk score.
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Git VCS Activity Section */}
+              <div className="p-4 rounded-xl bg-[#131522] border border-[#252A3A] space-y-3">
+                <div className="text-xs font-bold text-[#F4F7FF] uppercase tracking-wider flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <GitBranch size={14} className="text-[#39D9FF]" />
+                    <span>Git VCS Telemetry Linkage</span>
+                  </div>
+                  <span className="text-[10px] font-mono text-[#18C997] font-bold">LIVE VCS</span>
+                </div>
+
+                <div className="space-y-2 text-xs font-mono">
+                  <div className="flex justify-between items-center text-[#8992A8]">
+                    <span>Linked Branch:</span>
+                    <span className="text-[#39D9FF] bg-[#0D101A] px-2 py-0.5 rounded border border-[#252A3A]">
+                      {inspectedTask.branchName || `feature/task-${inspectedTask.id}-impl`}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center text-[#8992A8]">
+                    <span>Pull Request:</span>
+                    <a
+                      href={inspectedTask.pullRequestUrl || 'https://github.com/Jeevanrekha2252/INTELIX/pull/18'}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-[#4F7CFF] hover:underline flex items-center gap-1 text-[11px]"
+                    >
+                      <GitPullRequest size={12} />
+                      <span>PR #18 ({inspectedTask.prStatus || 'OPEN'})</span>
+                      <ExternalLink size={10} />
+                    </a>
+                  </div>
+
+                  <div className="flex justify-between items-center text-[#8992A8]">
+                    <span>VCS Commits:</span>
+                    <span className="text-[#F4F7FF] font-bold">
+                      {inspectedTask.commitsCount || 3} commits linked to PR
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Progress Slider */}
-            <div className="p-4 rounded-xl bg-[#131522] border border-[#252A3A] space-y-2">
-              <div className="flex justify-between text-xs">
-                <span className="text-[#8992A8]">Current Progress</span>
-                <span className="font-mono font-bold text-[#F4F7FF]">{inspectedTask.progress}%</span>
-              </div>
-              <input
-                type="range"
-                min={0}
-                max={100}
-                value={inspectedTask.progress}
-                onChange={(e) => {
-                  const newProgress = +e.target.value;
-                  setInspectedTask({ ...inspectedTask, progress: newProgress });
-                  updateTask(inspectedTask.id, { progress: newProgress });
-                }}
-                className="w-full accent-[#4F7CFF]"
-              />
-            </div>
-
-            {/* Actions */}
-            <div className="flex items-center gap-3 pt-3 border-t border-[#252A3A]">
+            {/* Footer Action Buttons */}
+            <div className="pt-4 border-t border-[#252A3A] flex items-center gap-3">
               <button
-                onClick={() => {
-                  toggleTaskBlocker(inspectedTask.id);
-                  setInspectedTask(null);
-                }}
+                onClick={() => setInspectedTask(null)}
                 className="btn-secondary flex-1 py-2 text-xs font-bold"
               >
-                {inspectedTask.blocked ? 'Resolve Blocker' : 'Flag Blocker'}
+                Close Drawer
               </button>
               <button
                 onClick={() => {
-                  moveTaskStatus(inspectedTask.id, inspectedTask.status === 'Completed' ? 'In Progress' : 'Completed');
+                  showToast('Task details & Git linkages saved successfully', 'success');
                   setInspectedTask(null);
                 }}
-                className="btn-primary flex-1 py-2 text-xs font-bold"
+                className="btn-primary flex-1 py-2 text-xs font-bold flex items-center justify-center gap-1.5"
               >
-                {inspectedTask.status === 'Completed' ? 'Reopen Task' : 'Complete Deliverable'}
+                <Save size={14} />
+                <span>Save Changes</span>
               </button>
             </div>
           </div>

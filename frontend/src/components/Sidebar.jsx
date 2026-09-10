@@ -137,7 +137,8 @@ export function getRoleNavGroups(roleId, badges = {}) {
           title: 'PLATFORM GOVERNANCE',
           items: [
             { id: 'Overview', label: 'Dashboard', icon: LayoutDashboard },
-            { id: 'Team Workload', label: 'Users & Permissions', icon: Users2 },
+            { id: 'Users', label: 'User Governance', icon: Users2 },
+            { id: 'Team Workload', label: 'Team Capacity', icon: Users2 },
             { id: 'Projects', label: 'Projects Directory', icon: FolderKanban, badge: badges.projects }
           ]
         },
@@ -195,6 +196,7 @@ export function getRoleNavGroups(roleId, badges = {}) {
         {
           title: 'SYSTEM',
           items: [
+            { id: 'Users', label: 'User Governance', icon: Users2 },
             { id: 'Notifications', label: 'Notifications', icon: Bell, badge: badges.notifications },
             { id: 'Settings', label: 'Settings', icon: Settings }
           ]

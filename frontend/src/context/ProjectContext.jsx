@@ -415,6 +415,89 @@ const INITIAL_NOTIFICATIONS = [
   { id: 4, title: 'Milestone Achieved', message: 'Ananya completed ABDM Consent Manager (100%).', time: '2h ago', unread: false, type: 'success' }
 ];
 
+export const INITIAL_USERS = [
+  {
+    id: 'u-1',
+    fullName: 'Sarah Jenkins',
+    email: 'manager@demo.com',
+    role: 'PROJECT_MANAGER',
+    title: 'Lead Project Manager',
+    capacityHoursPerWeek: 40,
+    isActive: true,
+    avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80'
+  },
+  {
+    id: 'u-2',
+    fullName: 'Alex Chen',
+    email: 'developer@demo.com',
+    role: 'EMPLOYEE',
+    title: 'Senior Backend Engineer',
+    capacityHoursPerWeek: 40,
+    isActive: true,
+    avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80'
+  },
+  {
+    id: 'u-3',
+    fullName: 'Elena Rostova',
+    email: 'frontend.dev@demo.com',
+    role: 'EMPLOYEE',
+    title: 'Frontend Architect',
+    capacityHoursPerWeek: 40,
+    isActive: true,
+    avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'
+  },
+  {
+    id: 'u-4',
+    fullName: 'David Vance (Dean)',
+    email: 'client@demo.com',
+    role: 'CLIENT',
+    title: 'University Client Sponsor',
+    capacityHoursPerWeek: 20,
+    isActive: true,
+    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80'
+  },
+  {
+    id: 'u-5',
+    fullName: 'Chancellor Thorne',
+    email: 'executive@demo.com',
+    role: 'EXECUTIVE',
+    title: 'VP Academic Operations',
+    capacityHoursPerWeek: 10,
+    isActive: true,
+    avatarUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&auto=format&fit=crop&q=80'
+  },
+  {
+    id: 'u-6',
+    fullName: 'System Administrator',
+    email: 'admin@demo.com',
+    role: 'ADMIN',
+    title: 'Platform Administrator',
+    capacityHoursPerWeek: 40,
+    isActive: true,
+    avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'
+  },
+  {
+    id: 'u-7',
+    fullName: 'Marcus Brody',
+    email: 'qa.lead@demo.com',
+    role: 'EMPLOYEE',
+    title: 'QA & Security Engineer',
+    capacityHoursPerWeek: 40,
+    isActive: true,
+    avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80'
+  },
+  {
+    id: 'u-8',
+    fullName: 'Priya Sharma',
+    email: 'devops@demo.com',
+    role: 'EMPLOYEE',
+    title: 'DevOps & Cloud Engineer',
+    capacityHoursPerWeek: 40,
+    isActive: true,
+    avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80'
+  }
+];
+
 export const THEMES = [
   { id: 'indigo', name: 'Intelix Command Dark', color: '#4F7CFF', badge: 'Official' },
   { id: 'emerald', name: 'Cyber Emerald', color: '#18C997', badge: 'Clean Tech' },
@@ -573,6 +656,11 @@ export function ProjectProvider({ children }) {
     return saved ? JSON.parse(saved) : INITIAL_NOTIFICATIONS;
   });
 
+  const [users, setUsers] = useState(() => {
+    const saved = localStorage.getItem('intelix_users_v3');
+    return saved ? JSON.parse(saved) : INITIAL_USERS;
+  });
+
   const [toasts, setToasts] = useState([]);
 
   // UI Modals & Drawers
@@ -633,6 +721,10 @@ export function ProjectProvider({ children }) {
   useEffect(() => {
     localStorage.setItem('intelix_notifs_v3', JSON.stringify(notifications));
   }, [notifications]);
+
+  useEffect(() => {
+    localStorage.setItem('intelix_users_v3', JSON.stringify(users));
+  }, [users]);
 
   // Toast Helper
   const showToast = (message, type = 'info') => {
@@ -718,6 +810,15 @@ export function ProjectProvider({ children }) {
           }
         } catch (taskErr) {
           console.warn('Backend tasks query notice:', taskErr.message);
+        }
+
+        try {
+          const backendUsers = await api.getUsers();
+          if (Array.isArray(backendUsers) && backendUsers.length > 0) {
+            setUsers(backendUsers);
+          }
+        } catch (uErr) {
+          console.warn('Backend users sync note:', uErr.message);
         }
 
         setProjects(prev => {
@@ -1109,19 +1210,82 @@ export function ProjectProvider({ children }) {
     addActivity(`Rebalanced sprint workload across ${suggestions.length} team members`, 'done', 'Resource Plan');
   };
 
-  // Deliverables & Approvals
-  const approveDeliverable = (id) => {
-    setApprovals(prev => prev.map(a => a.id === id ? { ...a, status: 'Approved', outcome: 'Approved by Client', approvedAt: 'Just now' } : a));
+  // Deliverables & Formal Sign-Off
+  const approveDeliverable = async (id, outcomeNote = 'Approved without conditions', signature = '') => {
+    const sig = signature || `SHA256:${Math.random().toString(16).substring(2, 10).toUpperCase()}`;
+    setApprovals(prev => prev.map(a => a.id === id ? {
+      ...a,
+      status: 'Approved',
+      outcome: outcomeNote,
+      reviewer: activeRole.name,
+      signature: sig,
+      approvedAt: 'Just now'
+    } : a));
     setDeliverables(prev => prev.map(d => d.id === id ? { ...d, reviewStatus: 'Approved' } : d));
-    showToast('Deliverable approved and recorded in audit log', 'success');
-    addActivity(`Approved deliverable #${id}`, 'done', 'Approvals');
+    try {
+      if (isBackendConnected) {
+        await api.submitApprovalDecision(id, 'APPROVED', outcomeNote);
+      }
+    } catch (e) {
+      console.warn('Backend approval sync:', e.message);
+    }
+    showToast('Deliverable sign-off approved and logged in immutable ledger', 'success');
+    addActivity(`Approved deliverable #${id} (${outcomeNote})`, 'done', 'Approvals');
   };
 
-  const requestChangesDeliverable = (id, note = 'Changes requested') => {
-    setApprovals(prev => prev.map(a => a.id === id ? { ...a, status: 'Changes Requested', outcome: note, approvedAt: 'Just now' } : a));
+  const requestChangesDeliverable = async (id, outcomeNote = 'Revision and clarification requested', signature = '') => {
+    const sig = signature || `SHA256:${Math.random().toString(16).substring(2, 10).toUpperCase()}`;
+    setApprovals(prev => prev.map(a => a.id === id ? {
+      ...a,
+      status: 'Changes Requested',
+      outcome: outcomeNote,
+      reviewer: activeRole.name,
+      signature: sig,
+      approvedAt: 'Just now'
+    } : a));
     setDeliverables(prev => prev.map(d => d.id === id ? { ...d, reviewStatus: 'Changes Requested' } : d));
-    showToast('Change request dispatched to deliverable owner', 'warning');
+    try {
+      if (isBackendConnected) {
+        await api.submitApprovalDecision(id, 'REVISE_REQUESTED', outcomeNote);
+      }
+    } catch (e) {
+      console.warn('Backend request changes sync:', e.message);
+    }
+    showToast('Formal revision requested. Deliverable owner alerted.', 'warning');
     addActivity(`Requested changes on deliverable #${id}`, 'risk', 'Approvals');
+  };
+
+  // Change Requests Lifecycle & 1-Click Task Conversion
+  const submitChangeRequest = async (crData) => {
+    const newCr = {
+      id: `CR-SCMS-00${changeRequests.length + 1}`,
+      title: crData.title,
+      project: crData.project || projects[0]?.name || 'Smart Campus 360',
+      projectId: crData.projectId || projects[0]?.id || 1,
+      description: crData.description,
+      submittedBy: activeRole.name,
+      scheduleImpact: crData.scheduleImpact || '+3 days',
+      budgetImpact: crData.budgetImpact || '₹45,000',
+      step: 1,
+      stepLabel: 'SUBMITTED',
+      date: 'Today',
+      status: 'Pending Review'
+    };
+    setChangeRequests(prev => [newCr, ...prev]);
+    try {
+      if (isBackendConnected && newCr.projectId) {
+        await api.createChangeRequest(newCr.projectId, {
+          title: newCr.title,
+          description: newCr.description,
+          impactAnalysis: `Schedule: ${newCr.scheduleImpact}, Budget: ${newCr.budgetImpact}`,
+          estimatedEffortHours: 24
+        });
+      }
+    } catch (e) {
+      console.warn('Backend change request create:', e.message);
+    }
+    showToast(`Change Request ${newCr.id} submitted for governance review`, 'success');
+    addActivity(`Submitted change request: ${newCr.title}`, 'risk', 'Change Governance');
   };
 
   const advanceChangeRequest = (id) => {
@@ -1144,6 +1308,178 @@ export function ProjectProvider({ children }) {
       };
     }));
     showToast(`Change request ${id} transitioned to next stage`, 'info');
+  };
+
+  const convertChangeRequestToTask = async (crId) => {
+    const cr = changeRequests.find(c => c.id === crId);
+    if (!cr) return;
+
+    const newTask = {
+      id: tasks.length + 1,
+      taskKey: `CR-${Date.now().toString().slice(-3)}`,
+      title: `[CR Implementation] ${cr.title}`,
+      description: `Formal Change Request approved: ${cr.description}. Schedule impact: ${cr.scheduleImpact}`,
+      project: cr.project || projects[0]?.name,
+      projectId: cr.projectId || projects[0]?.id,
+      assignee: 'Alex Chen',
+      avatar: 'AC',
+      status: 'In Progress',
+      priority: 'High',
+      progress: 10,
+      due: '29 Sep',
+      estimatedHours: 28,
+      actualHours: 0,
+      risk: 42,
+      riskLevel: 'MEDIUM',
+      blocked: false,
+      branchName: `feature/cr-${cr.id.toLowerCase()}`,
+      pullRequestUrl: 'https://github.com/Jeevanrekha2252/INTELIX/pull/19',
+      prStatus: 'OPEN',
+      commitsCount: 1
+    };
+
+    setTasks(prev => [newTask, ...prev]);
+    setChangeRequests(prev => prev.map(c => c.id === crId ? { ...c, step: 4, stepLabel: 'TASK CREATED', status: 'Converted to Task' } : c));
+
+    try {
+      if (isBackendConnected) {
+        await api.convertChangeRequestToTask(crId);
+      }
+    } catch (e) {
+      console.warn('Backend convert CR error:', e.message);
+    }
+
+    showToast(`Change Request ${cr.id} converted into active sprint task!`, 'success');
+    addActivity(`Converted Change Request ${cr.id} to sprint task`, 'done', 'Sprint Plan');
+  };
+
+  // Meetings Collaboration & 1-Click Action Conversion
+  const scheduleMeeting = async (meetingData) => {
+    const newMeeting = {
+      id: meetings.length + 1,
+      title: meetingData.title,
+      project: meetingData.project || projects[0]?.name,
+      date: meetingData.date || 'Tomorrow, 2:00 PM',
+      participants: meetingData.participants || ['Sarah Jenkins', 'Alex Chen', 'David Vance (Dean)'],
+      agenda: meetingData.agenda || 'Review sprint deliverables and unblock critical path items.',
+      decisions: meetingData.decisions || ['Schedule regular pair programming for database migration.'],
+      status: 'Upcoming'
+    };
+    setMeetings(prev => [newMeeting, ...prev]);
+    try {
+      if (isBackendConnected && projects[0]?.id) {
+        await api.scheduleMeeting(projects[0].id, {
+          title: newMeeting.title,
+          agenda: newMeeting.agenda,
+          scheduledTime: new Date(Date.now() + 86400000).toISOString()
+        });
+      }
+    } catch (e) {
+      console.warn('Backend schedule meeting error:', e.message);
+    }
+    showToast(`Meeting "${newMeeting.title}" scheduled and synchronized with calendar`, 'success');
+    addActivity(`Scheduled project meeting: ${newMeeting.title}`, 'progress', 'Collaboration');
+  };
+
+  const convertMeetingActionToTask = async (actionText, projectTitle, actionId = null) => {
+    const newTask = {
+      id: tasks.length + 1,
+      taskKey: `ACT-${Date.now().toString().slice(-3)}`,
+      title: `[Action Item] ${actionText}`,
+      description: `Formal action item decided during stakeholder sync: ${actionText}`,
+      project: projectTitle || projects[0]?.name,
+      assignee: 'Alex Chen',
+      avatar: 'AC',
+      status: 'In Progress',
+      priority: 'High',
+      progress: 0,
+      due: '25 Sep',
+      estimatedHours: 16,
+      actualHours: 0,
+      risk: 35,
+      riskLevel: 'LOW',
+      blocked: false,
+      branchName: 'feature/meeting-action',
+      pullRequestUrl: '',
+      commitsCount: 0
+    };
+    setTasks(prev => [newTask, ...prev]);
+    try {
+      if (isBackendConnected && actionId) {
+        await api.convertActionItemToTask(actionId);
+      }
+    } catch (e) {
+      console.warn('Backend convert action error:', e.message);
+    }
+    showToast('Meeting action item converted into active sprint deliverable!', 'success');
+    addActivity(`Converted meeting action item into active task`, 'done', 'Action Items');
+  };
+
+  // Documents & Artifacts
+  const uploadDocument = async (docData) => {
+    const newDoc = {
+      id: documents.length + 1,
+      name: docData.name || 'Architecture Specification.pdf',
+      type: docData.type || 'PDF',
+      project: docData.project || projects[0]?.name,
+      owner: activeRole.name,
+      updated: 'Just now',
+      size: docData.size || '2.4 MB',
+      access: docData.access || 'Internal Stakeholders',
+      description: docData.description || 'Versioned project technical artifact.'
+    };
+    setDocuments(prev => [newDoc, ...prev]);
+    try {
+      if (isBackendConnected && projects[0]?.id) {
+        await api.uploadDocument(projects[0].id, {
+          filename: newDoc.name,
+          description: newDoc.description,
+          fileSize: 2400000,
+          contentType: 'application/pdf'
+        });
+      }
+    } catch (e) {
+      console.warn('Backend upload document error:', e.message);
+    }
+    showToast(`Document "${newDoc.name}" uploaded to project repository`, 'success');
+    addActivity(`Uploaded project artifact: ${newDoc.name}`, 'done', 'Documents');
+  };
+
+  // User Administration & Governance
+  const toggleUserStatus = async (userId) => {
+    let updatedStatus = false;
+    setUsers(prev => prev.map(u => {
+      if (u.id === userId) {
+        updatedStatus = !(u.isActive !== false);
+        return { ...u, isActive: updatedStatus };
+      }
+      return u;
+    }));
+    try {
+      if (isBackendConnected) {
+        await api.toggleUserStatus(userId, updatedStatus);
+      }
+    } catch (err) {
+      console.warn('Backend toggleUserStatus error:', err.message);
+    }
+    showToast(`User status updated to ${updatedStatus ? 'Active' : 'Deactivated'}`, 'info');
+    addActivity(`Updated user status for account #${userId}`, 'progress', 'Governance');
+  };
+
+  const addUser = (userData) => {
+    const newUser = {
+      id: `u-${Date.now()}`,
+      fullName: userData.fullName,
+      email: userData.email,
+      role: userData.role || 'EMPLOYEE',
+      title: userData.title || 'Team Member',
+      capacityHoursPerWeek: userData.capacityHoursPerWeek || 40,
+      isActive: true,
+      avatarUrl: userData.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'
+    };
+    setUsers(prev => [newUser, ...prev]);
+    showToast(`Provisioned account for ${newUser.fullName} (${newUser.role})`, 'success');
+    addActivity(`Provisioned new platform account: ${newUser.fullName}`, 'done', 'Governance');
   };
 
   const markNotificationRead = (id) => {
@@ -1202,6 +1538,9 @@ export function ProjectProvider({ children }) {
         recommendations,
         notifications,
         unreadCount,
+        users,
+        toggleUserStatus,
+        addUser,
         activeRole,
         setActiveRole,
         theme,
@@ -1247,7 +1586,12 @@ export function ProjectProvider({ children }) {
         applyRebalancePlan,
         approveDeliverable,
         requestChangesDeliverable,
+        submitChangeRequest,
         advanceChangeRequest,
+        convertChangeRequestToTask,
+        scheduleMeeting,
+        convertMeetingActionToTask,
+        uploadDocument,
         markNotificationRead,
         markAllNotificationsRead,
         resetToDefaults

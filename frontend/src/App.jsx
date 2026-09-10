@@ -29,13 +29,14 @@ import MeetingsView from './views/MeetingsView';
 import DocumentsView from './views/DocumentsView';
 import NotificationsView from './views/NotificationsView';
 import SettingsView from './views/SettingsView';
+import UsersView from './views/UsersView';
 
 export const ROLE_ALLOWED_VIEWS = {
   manager: [
     'Overview', 'Projects', 'Tasks', 'Timeline', 'Dependencies',
     'Risk Center', 'Analytics', 'Team Workload', 'Deliverables',
     'Change Requests', 'Approvals', 'Meetings', 'Documents',
-    'Notifications', 'Settings'
+    'Users', 'Notifications', 'Settings'
   ],
   dev: [
     'Overview', 'Projects', 'Tasks', 'Timeline', 'Dependencies',
@@ -52,7 +53,7 @@ export const ROLE_ALLOWED_VIEWS = {
     'Deliverables', 'Approvals', 'Documents', 'Notifications', 'Settings'
   ],
   admin: [
-    'Overview', 'Team Workload', 'Projects', 'Documents',
+    'Overview', 'Users', 'Team Workload', 'Projects', 'Documents',
     'Notifications', 'Settings'
   ]
 };
@@ -122,6 +123,8 @@ function AppContent() {
         return <NotificationsView />;
       case 'Settings':
         return <SettingsView />;
+      case 'Users':
+        return <UsersView />;
       default:
         return <OverviewView />;
     }

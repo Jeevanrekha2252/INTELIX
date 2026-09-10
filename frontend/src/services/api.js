@@ -207,6 +207,98 @@ export const api = {
     return request(`/projects/${projectId}/copilot/apply/${recommendationId}`, {
       method: 'POST'
     });
+  },
+
+  // Users & Administration
+  async getUsers() {
+    return request('/users');
+  },
+
+  async toggleUserStatus(userId, active) {
+    return request(`/users/${userId}/status?active=${active}`, {
+      method: 'PUT'
+    });
+  },
+
+  // Change Requests
+  async getChangeRequests(projectId) {
+    return request(`/projects/${projectId}/change-requests`);
+  },
+
+  async createChangeRequest(projectId, crData) {
+    return request(`/projects/${projectId}/change-requests`, {
+      method: 'POST',
+      body: JSON.stringify(crData)
+    });
+  },
+
+  async reviewChangeRequest(id, reviewData) {
+    return request(`/change-requests/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(reviewData)
+    });
+  },
+
+  async convertChangeRequestToTask(id) {
+    return request(`/change-requests/${id}/convert-to-task`, {
+      method: 'POST'
+    });
+  },
+
+  // Meetings & Action Items
+  async getMeetings(projectId) {
+    return request(`/projects/${projectId}/meetings`);
+  },
+
+  async scheduleMeeting(projectId, meetingData) {
+    return request(`/projects/${projectId}/meetings`, {
+      method: 'POST',
+      body: JSON.stringify(meetingData)
+    });
+  },
+
+  async getActionItems(meetingId) {
+    return request(`/meetings/${meetingId}/actions`);
+  },
+
+  async convertActionItemToTask(actionId) {
+    return request(`/meetings/actions/${actionId}/convert-to-task`, {
+      method: 'POST'
+    });
+  },
+
+  // Documents
+  async getDocuments(projectId) {
+    return request(`/projects/${projectId}/documents`);
+  },
+
+  async uploadDocument(projectId, docData) {
+    return request(`/projects/${projectId}/documents`, {
+      method: 'POST',
+      body: JSON.stringify(docData)
+    });
+  },
+
+  // Activity & Audit Log
+  async getProjectActivity(projectId) {
+    return request(`/projects/${projectId}/activity`);
+  },
+
+  // Notifications
+  async getNotifications() {
+    return request('/notifications');
+  },
+
+  async markNotificationRead(id) {
+    return request(`/notifications/${id}/read`, {
+      method: 'PUT'
+    });
+  },
+
+  async markAllNotificationsRead() {
+    return request('/notifications/read-all', {
+      method: 'PUT'
+    });
   }
 };
 
