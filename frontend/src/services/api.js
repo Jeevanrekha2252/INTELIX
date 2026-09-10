@@ -168,21 +168,27 @@ export const api = {
   },
 
   // Analytics & Risks
-  async getProjectRisk(projectId) {
-    return request(`/risks/projects/${projectId}`);
+  async getProjectRisks(projectId) {
+    return request(`/projects/${projectId}/risks`);
   },
 
-  async getRiskDashboard() {
-    return request('/risks/dashboard');
+  async getTaskRisk(taskId) {
+    return request(`/tasks/${taskId}/risk`);
+  },
+
+  async recalculateProjectRisks(projectId) {
+    return request(`/projects/${projectId}/risk/recalculate`, {
+      method: 'POST'
+    });
   },
 
   async getProjectAnalytics(projectId) {
-    return request(`/analytics/projects/${projectId}/overview`);
+    return request(`/projects/${projectId}/analytics`);
   },
 
   // Approvals & Deliverables
-  async getPendingApprovals() {
-    return request('/approvals/pending');
+  async getApprovals(projectId) {
+    return request(`/projects/${projectId}/approvals`);
   },
 
   async submitApprovalDecision(approvalId, decision, comments = '') {
@@ -193,10 +199,13 @@ export const api = {
   },
 
   // AI Copilot
-  async askAiCopilot(query, projectId = null) {
-    return request('/ai/copilot', {
-      method: 'POST',
-      body: JSON.stringify({ query, projectId })
+  async getAiRecommendations(projectId) {
+    return request(`/projects/${projectId}/copilot/recommendations`);
+  },
+
+  async applyAiRecommendation(projectId, recommendationId) {
+    return request(`/projects/${projectId}/copilot/apply/${recommendationId}`, {
+      method: 'POST'
     });
   }
 };

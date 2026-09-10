@@ -830,6 +830,27 @@ export function ProjectProvider({ children }) {
     addActivity(`Created task "${newTask.title}" on ${project.name}`, 'done', 'Sprint');
 
     recalculateProjectHealth(project.id);
+
+    // Sync to Spring Boot backend if connected
+    if (isBackendConnected) {
+      const targetProjId = project.id && typeof project.id === 'string' && project.id.includes('-')
+        ? project.id
+        : projects.find(p => typeof p.id === 'string' && p.id.includes('-'))?.id;
+
+      if (targetProjId) {
+        api.createTask(targetProjId, {
+          title: newTask.title,
+          description: newTask.description || newTask.title,
+          priority: (newTask.priority || 'MEDIUM').toUpperCase(),
+          dueDate: '2026-10-30',
+          estimatedHours: newTask.estimatedHours || 24
+        }).then(created => {
+          if (created?.id) {
+            setTasks(prev => prev.map(t => t.id === newTask.id ? { ...t, id: created.id } : t));
+          }
+        }).catch(err => console.warn('Backend task create notice:', err));
+      }
+    }
   };
 
   const updateTask = (id, updates) => {
@@ -852,6 +873,11 @@ export function ProjectProvider({ children }) {
 
     showToast('Task details saved', 'info');
     addActivity(`Updated task "${updates.title || 'Task'}"`, 'progress', 'Sprint');
+
+    // Sync progress to Spring Boot backend
+    if (isBackendConnected && typeof id === 'string' && id.includes('-') && updates.progress !== undefined) {
+      api.updateTaskProgress(id, updates.progress, updates.actualHours || 0).catch(err => console.warn('Backend progress sync:', err));
+    }
   };
 
   const moveTaskStatus = (id, newStatus) => {
@@ -873,11 +899,22 @@ export function ProjectProvider({ children }) {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
     showToast(`Moved "${task.title}" → ${newStatus}`, 'success');
     addActivity(`Moved "${task.title}" to ${newStatus}`, newStatus === 'Completed' ? 'done' : 'progress', 'Kanban');
+
+    // Sync status change to Spring Boot backend
+    if (isBackendConnected && typeof id === 'string' && id.includes('-')) {
+      const backendStatus = newStatus === 'Completed' ? 'DONE' : newStatus === 'Blocked' ? 'BLOCKED' : newStatus === 'In Progress' ? 'IN_PROGRESS' : 'TO_DO';
+      api.updateTaskStatus(id, backendStatus).catch(err => console.warn('Backend status sync:', err));
+    }
   };
 
   const toggleTaskBlocker = (id) => {
     const task = tasks.find(t => t.id === id);
     if (!task) return;
+
+    // Sync blocker to Spring Boot backend
+    if (isBackendConnected && typeof id === 'string' && id.includes('-')) {
+      api.toggleTaskBlocker(id, !task.blocked ? 'Flagged blocker from Kanban' : '').catch(err => console.warn('Backend blocker sync:', err));
+    }
 
     const newBlocked = !task.blocked;
     const updates = {
