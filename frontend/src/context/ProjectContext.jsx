@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { calculateLocalRiskScore } from '../services/mlEngine';
+import api, { setAuthToken } from '../services/api';
 
 const ProjectContext = createContext(null);
 
@@ -469,7 +470,16 @@ export const ROLES = [
   }
 ];
 
+export const ROLE_CREDENTIALS = {
+  manager: { email: 'manager@demo.com', password: 'password123' },
+  dev: { email: 'developer@demo.com', password: 'password123' },
+  client: { email: 'client@demo.com', password: 'password123' },
+  exec: { email: 'executive@demo.com', password: 'password123' },
+  admin: { email: 'admin@demo.com', password: 'password123' }
+};
+
 export function ProjectProvider({ children }) {
+  const [isBackendConnected, setIsBackendConnected] = useState(false);
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem('intelix_theme') || 'indigo';
   });
@@ -645,8 +655,105 @@ export function ProjectProvider({ children }) {
     setActivity(prev => [newEntry, ...prev.slice(0, 25)]);
   };
 
-  // Auth / Role Navigation Helpers - STRICTLY LOCKED TO LOGIN SCREEN
-  const loginAsRole = (roleId) => {
+  // Backend Synchronizer
+  const syncFromBackend = async () => {
+    try {
+      const backendProjects = await api.getProjects();
+      if (Array.isArray(backendProjects) && backendProjects.length > 0) {
+        setIsBackendConnected(true);
+        const mappedProjects = backendProjects.map((bp, idx) => ({
+          id: bp.id,
+          name: bp.name,
+          description: bp.description || 'Enterprise project initiative managed via Spring Boot',
+          owner: bp.owner?.fullName || 'Sarah Jenkins',
+          client: bp.clientName || 'University Council',
+          health: bp.overallHealthScore ? Math.round(bp.overallHealthScore) : 82,
+          status: bp.status === 'ACTIVE' ? 'On Track' : bp.status === 'AT_RISK' ? 'At Risk' : bp.status || 'On Track',
+          priority: bp.priority === 'CRITICAL' ? 'Critical' : bp.priority === 'HIGH' ? 'High' : 'Medium',
+          deadline: bp.targetCompletionDate || '30 Oct 2026',
+          startDate: bp.startDate || '01 Aug 2026',
+          progress: 68,
+          budget: bp.allocatedBudget || 1200000,
+          tags: ['Spring Boot', 'PostgreSQL', 'AI Engine', 'React'],
+          tasks: 18,
+          done: 12,
+          risks: 2,
+          members: 6,
+          predicted: '02 Nov 2026',
+          delayDays: 2,
+          category: 'Enterprise Platform',
+          ministry: 'National Platform Initiative'
+        }));
+
+        try {
+          const backendTasks = await api.getProjectTasks(backendProjects[0].id);
+          if (Array.isArray(backendTasks) && backendTasks.length > 0) {
+            const mappedTasks = backendTasks.map(bt => ({
+              id: bt.id,
+              title: bt.title,
+              project: backendProjects[0].name,
+              projectId: backendProjects[0].id,
+              assignee: bt.assignee?.fullName || 'Alex Chen',
+              avatar: bt.assignee?.fullName ? bt.assignee.fullName.split(' ').map(n => n[0]).join('') : 'AC',
+              status: bt.status === 'IN_PROGRESS' ? 'In Progress' : bt.status === 'DONE' ? 'Completed' : bt.status === 'BLOCKED' ? 'Blocked' : 'Pending',
+              priority: bt.priority === 'CRITICAL' ? 'Critical' : bt.priority === 'HIGH' ? 'High' : 'Medium',
+              progress: bt.progressPercentage || 0,
+              expectedProgress: 75,
+              daysRemaining: bt.daysRemaining || 5,
+              due: bt.dueDate ? bt.dueDate.substring(5) : '25 Sep',
+              risk: bt.riskScore ? Math.round(bt.riskScore) : 42,
+              riskLevel: bt.riskLevel || 'MEDIUM',
+              blocked: !!bt.isBlocked,
+              blockerReason: bt.blockerReason || '',
+              estimatedHours: bt.estimatedHours || 24,
+              actualHours: bt.loggedHours || 8,
+              tags: [bt.priority || 'Sprint'],
+              description: bt.description || ''
+            }));
+
+            setTasks(prev => {
+              const remaining = prev.filter(p => !mappedTasks.some(mt => mt.id === p.id));
+              return [...mappedTasks, ...remaining];
+            });
+          }
+        } catch (taskErr) {
+          console.warn('Backend tasks query notice:', taskErr.message);
+        }
+
+        setProjects(prev => {
+          const remaining = prev.filter(p => !mappedProjects.some(mp => mp.id === p.id));
+          return [...mappedProjects, ...remaining];
+        });
+      }
+    } catch (err) {
+      console.warn('Backend sync unavailable, using local cache:', err.message);
+      setIsBackendConnected(false);
+    }
+  };
+
+  // Initial Backend Health & Auto-Sync
+  useEffect(() => {
+    const initBackend = async () => {
+      const isHealthy = await api.checkHealth();
+      if (isHealthy) {
+        setIsBackendConnected(true);
+        const savedRole = localStorage.getItem('intelix_role') || 'manager';
+        const creds = ROLE_CREDENTIALS[savedRole] || ROLE_CREDENTIALS.manager;
+        try {
+          await api.login(creds.email, creds.password);
+          await syncFromBackend();
+        } catch (e) {
+          console.warn('Background auto-login info:', e.message);
+        }
+      } else {
+        setIsBackendConnected(false);
+      }
+    };
+    initBackend();
+  }, []);
+
+  // Auth / Role Navigation Helpers - Connected to live backend
+  const loginAsRole = async (roleId) => {
     const target = ROLES.find(r => r.id === roleId) || ROLES[0];
     setActiveRole(target);
     setIsAuthenticated(true);
@@ -656,11 +763,27 @@ export function ProjectProvider({ children }) {
     localStorage.setItem('intelix_role', target.id);
     localStorage.setItem('intelix_app_mode', 'app');
     showToast(`Authenticated as ${target.name} (${target.badge})`, 'success');
+
+    // Live backend authentication & synchronization
+    const creds = ROLE_CREDENTIALS[roleId] || ROLE_CREDENTIALS.manager;
+    try {
+      const loginResp = await api.login(creds.email, creds.password);
+      if (loginResp?.token) {
+        setIsBackendConnected(true);
+        showToast('Connected to live Spring Boot backend (Port 8080)', 'success');
+        await syncFromBackend();
+      }
+    } catch (authErr) {
+      console.warn('Spring Boot live auth fallback:', authErr.message);
+      setIsBackendConnected(false);
+    }
   };
 
   const logout = () => {
     setIsAuthenticated(false);
     setAppMode('login');
+    setIsBackendConnected(false);
+    setAuthToken(null);
     localStorage.removeItem('intelix_authenticated');
     localStorage.removeItem('intelix_role');
     localStorage.removeItem('intelix_app_mode');
@@ -1055,6 +1178,8 @@ export function ProjectProvider({ children }) {
         showToast,
         activeView,
         setActiveView,
+        isBackendConnected,
+        setIsBackendConnected,
 
         // Modals
         isSearchOpen,

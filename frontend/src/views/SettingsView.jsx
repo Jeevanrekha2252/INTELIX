@@ -14,7 +14,7 @@ import {
 import { useProject } from '../context/ProjectContext';
 
 export default function SettingsView() {
-  const { resetToDefaults, showToast, activeRole } = useProject();
+  const { resetToDefaults, showToast, activeRole, isBackendConnected } = useProject();
 
   const [weights, setWeights] = useState({
     progressGapWeight: 0.9,
@@ -135,9 +135,13 @@ export default function SettingsView() {
           <div className="p-3.5 rounded-xl bg-[#0D101A] border border-[#252A3A] flex items-center justify-between">
             <div>
               <div className="font-bold text-[#F4F7FF]">Spring Boot Core Backend</div>
-              <div className="text-[10px] text-[#8992A8] font-mono">http://localhost:8080/api/v1</div>
+              <div className="text-[10px] text-[#8992A8] font-mono">http://localhost:8080/api (Active)</div>
             </div>
-            <span className="badge-success text-[10px] px-2 py-0.5 rounded font-mono font-bold">ONLINE</span>
+            <span className={`text-[10px] px-2 py-0.5 rounded font-mono font-bold ${
+              isBackendConnected ? 'badge-success' : 'badge-warning'
+            }`}>
+              {isBackendConnected ? 'CONNECTED · PORT 8080' : 'OFFLINE'}
+            </span>
           </div>
 
           <div className="p-3.5 rounded-xl bg-[#0D101A] border border-[#252A3A] flex items-center justify-between">

@@ -29,7 +29,8 @@ export default function Topbar({ mobileMenuOpen, setMobileMenuOpen }) {
     setEditingTask,
     setIsCreateProjectOpen,
     setIsNotificationDrawerOpen,
-    setActiveView
+    setActiveView,
+    isBackendConnected
   } = useProject();
 
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
@@ -78,6 +79,25 @@ export default function Topbar({ mobileMenuOpen, setMobileMenuOpen }) {
 
       {/* Right Quick Actions */}
       <div className="flex items-center gap-2 sm:gap-2.5 ml-auto">
+        {/* Live Backend Connection Indicator */}
+        <div
+          title={isBackendConnected ? 'Connected to Spring Boot REST Backend (Port 8080)' : 'Running in Offline / Local Cache Mode'}
+          className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono border transition ${
+            isBackendConnected
+              ? 'bg-[#18C997]/10 text-[#18C997] border-[#18C997]/30'
+              : 'bg-[#555E73]/10 text-[#8992A8] border-[#252A3A]'
+          }`}
+        >
+          <span
+            className={`w-2 h-2 rounded-full transition ${
+              isBackendConnected
+                ? 'bg-[#18C997] animate-pulse shadow-[0_0_8px_#18C997]'
+                : 'bg-[#555E73]'
+            }`}
+          />
+          <span>{isBackendConnected ? 'Backend: 8080' : 'Offline Mode'}</span>
+        </div>
+
         {/* Role-Specific Primary Action */}
         {activeRole?.id === 'manager' && (
           <>
