@@ -23,9 +23,9 @@ public class DependencyController {
         return ResponseEntity.ok(dependencyService.getProjectDependencies(projectId));
     }
 
-    @PostMapping("/api/projects/{projectId}/dependencies")
+    @PostMapping({"/api/projects/{projectId}/dependencies", "/api/dependencies"})
     @PreAuthorize("hasAnyRole('PROJECT_MANAGER', 'ADMIN')")
-    public ResponseEntity<TaskDependency> createDependency(@PathVariable String projectId,
+    public ResponseEntity<TaskDependency> createDependency(@PathVariable(required = false) String projectId,
                                                            @RequestBody PlatformDtos.DependencyCreateRequest request) {
         return ResponseEntity.ok(dependencyService.createDependency(request.getPredecessorTaskId(), request.getSuccessorTaskId()));
     }

@@ -58,6 +58,8 @@ public class Project {
     @Column(nullable = false)
     private RiskLevel riskLevel = RiskLevel.LOW;
 
+    private Double budget = 1250000.0;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -130,4 +132,14 @@ public class Project {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public Double getBudget() { return budget; }
+    public void setBudget(Double budget) { this.budget = budget; }
+
+    // Frontend compatibility helpers
+    public User getOwner() { return this.projectManager; }
+    public String getClientName() { return this.client != null ? this.client.getFullName() : "University Council"; }
+    public int getOverallHealthScore() { return this.healthScore; }
+    public Double getAllocatedBudget() { return this.budget != null ? this.budget : 1250000.0; }
+    public LocalDate getTargetCompletionDate() { return this.endDate; }
 }

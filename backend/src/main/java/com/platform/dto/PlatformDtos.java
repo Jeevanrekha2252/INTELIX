@@ -59,6 +59,18 @@ public class PlatformDtos {
         public void setStatus(DeliverableApproval.ApprovalStatus status) { this.status = status; }
         public String getComments() { return comments; }
         public void setComments(String comments) { this.comments = comments; }
+
+        public void setDecision(String decision) {
+            if (decision == null) return;
+            if ("APPROVED".equalsIgnoreCase(decision)) {
+                this.status = DeliverableApproval.ApprovalStatus.APPROVED;
+            } else {
+                this.status = DeliverableApproval.ApprovalStatus.CHANGES_REQUESTED;
+            }
+        }
+        public String getDecision() {
+            return status != null ? status.name() : null;
+        }
     }
 
     public static class MeetingCreate {
@@ -78,6 +90,18 @@ public class PlatformDtos {
         public void setDurationMinutes(int durationMinutes) { this.durationMinutes = durationMinutes; }
         public String getAgenda() { return agenda; }
         public void setAgenda(String agenda) { this.agenda = agenda; }
+
+        public void setScheduledTime(String time) {
+            if (time != null && !time.isBlank()) {
+                try {
+                    this.scheduledAt = java.time.OffsetDateTime.parse(time).toLocalDateTime();
+                } catch (Exception e) {
+                    try {
+                        this.scheduledAt = LocalDateTime.parse(time);
+                    } catch (Exception ignored) {}
+                }
+            }
+        }
     }
 
     public static class WorkloadMemberDTO {

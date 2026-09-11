@@ -94,6 +94,7 @@ public class Task {
         TESTING,
         CLIENT_REVIEW,
         COMPLETED,
+        DONE,
         BLOCKED
     }
 
@@ -204,4 +205,12 @@ public class Task {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    // Frontend compatibility helpers
+    public int getProgressPercentage() { return this.progress; }
+    public double getLoggedHours() { return this.actualHours; }
+    public int getDaysRemaining() {
+        if (this.dueDate == null) return 5;
+        return Math.max(0, (int) java.time.temporal.ChronoUnit.DAYS.between(java.time.LocalDate.now(), this.dueDate));
+    }
 }
