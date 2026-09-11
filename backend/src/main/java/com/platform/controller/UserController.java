@@ -1,8 +1,12 @@
 package com.platform.controller;
 
 import com.platform.dto.AuthDtos;
+import com.platform.dto.ProjectInitiationDtos.EmployeeWorkloadDTO;
+import com.platform.dto.ProjectInitiationDtos.InitiationClientInfo;
+import com.platform.entity.Role;
 import com.platform.entity.User;
 import com.platform.repository.UserRepository;
+import com.platform.service.ProjectInitiationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -14,9 +18,11 @@ import java.util.List;
 public class UserController {
 
     private final UserRepository userRepository;
+    private final ProjectInitiationService initiationService;
 
-    public UserController(UserRepository userRepository) {
+    public UserController(UserRepository userRepository, ProjectInitiationService initiationService) {
         this.userRepository = userRepository;
+        this.initiationService = initiationService;
     }
 
     @GetMapping
@@ -32,6 +38,25 @@ public class UserController {
         List<AuthDtos.UserDto> users = userRepository.findByRole(r)
                 .stream().map(AuthDtos.UserDto::fromEntity).toList();
         return ResponseEntity.ok(users);
+    }
+
+    @GetMapping("/clients")
+    public ResponseEntity<List<AuthDtos.UserDto>> getClients() {
+        List<AuthDtos.UserDto> clients = userRepository.findByRole(Role.CLIENT)
+                .stream().map(AuthDtos.UserDto::fromEntity).toList();
+        return ResponseEntity.ok(clients);
+    }
+
+    @PostMapping("/client")
+    @PreAuthorize("hasAnyRole('PROJECT_MANAGER', 'ADMIN')")
+    public ResponseEntity<AuthDtos.UserDto> createClient(@RequestBody InitiationClientInfo info) {
+        return ResponseEntity.ok(initiationService.createClientUser(info));
+    }
+
+    @GetMapping("/employees-workload")
+    @PreAuthorize("hasAnyRole('PROJECT_MANAGER', 'ADMIN')")
+    public ResponseEntity<List<EmployeeWorkloadDTO>> getEmployeesWithWorkload() {
+        return ResponseEntity.ok(initiationService.getEmployeesWithWorkload());
     }
 
     @PutMapping("/{id}/status")

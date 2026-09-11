@@ -1,9 +1,24 @@
 {
-  "name":"intelix-dashboard",
-  "private":true,
-  "version":"1.0.0",
-  "type":"module",
-  "scripts":{"dev":"vite","build":"vite build","preview":"vite preview"},
-  "dependencies":{"@vitejs/plugin-react":"latest","vite":"latest","react":"latest","react-dom":"latest","lucide-react":"latest","recharts":"latest"},
-  "devDependencies":{"tailwindcss":"latest","@tailwindcss/vite":"latest"}
+  "name": "intelix-dashboard",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@stomp/stompjs": "^7.3.0",
+    "@vitejs/plugin-react": "latest",
+    "lucide-react": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "recharts": "latest",
+    "vite": "latest"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "latest",
+    "tailwindcss": "latest"
+  }
 }

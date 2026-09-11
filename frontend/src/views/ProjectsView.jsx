@@ -21,6 +21,7 @@ export default function ProjectsView() {
   const {
     projects,
     tasks,
+    activeRole,
     setIsCreateProjectOpen,
     setDrilldownProject
   } = useProject();
@@ -149,12 +150,17 @@ export default function ProjectsView() {
                       </div>
                     </div>
 
-                    <div className="text-right shrink-0">
+                    <div className="text-right shrink-0 flex flex-col items-end gap-1.5">
                       <span className={`px-2.5 py-1 rounded-md text-xs font-mono font-bold ${
                         isAtRisk ? 'badge-critical' : 'badge-success'
                       }`}>
                         {project.health} — {project.status}
                       </span>
+                      {activeRole?.id !== 'dev' && (
+                        <span className="text-[10px] px-2 py-0.5 rounded bg-[#4F7CFF]/15 text-[#8EB0FF] border border-[#4F7CFF]/30 font-mono font-semibold">
+                          {project.status === 'Planning' ? 'DRAFT AGREEMENT' : 'LOCKED BASELINE'}
+                        </span>
+                      )}
                     </div>
                   </div>
 

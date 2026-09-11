@@ -16,10 +16,11 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import { useProject } from '../context/ProjectContext';
+import { useRealtimeNotifications } from '../context/RealtimeNotificationContext';
 
 export default function Topbar({ mobileMenuOpen, setMobileMenuOpen }) {
   const {
-    unreadCount,
+    unreadCount: projectUnreadCount,
     activeRole,
     setAppMode,
     logout,
@@ -32,6 +33,17 @@ export default function Topbar({ mobileMenuOpen, setMobileMenuOpen }) {
     setActiveView,
     isBackendConnected
   } = useProject();
+
+  let realtimeUnreadCount = 0;
+  let connectionStatus = 'OFFLINE';
+  try {
+    const realtime = useRealtimeNotifications();
+    realtimeUnreadCount = realtime.unreadCount;
+    connectionStatus = realtime.connectionStatus;
+  } catch {}
+
+  const effectiveUnreadCount = realtimeUnreadCount !== undefined ? realtimeUnreadCount : projectUnreadCount;
+
 
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -79,24 +91,35 @@ export default function Topbar({ mobileMenuOpen, setMobileMenuOpen }) {
 
       {/* Right Quick Actions */}
       <div className="flex items-center gap-2 sm:gap-2.5 ml-auto">
-        {/* Live Backend Connection Indicator */}
+        {/* Live WebSocket/STOMP Connection Indicator */}
         <div
-          title={isBackendConnected ? 'Connected to Spring Boot REST Backend (Port 8080)' : 'Running in Offline / Local Cache Mode'}
+          title={
+            connectionStatus === 'CONNECTED'
+              ? 'Real-Time WebSocket/STOMP Stream: CONNECTED (Port 8080)'
+              : (connectionStatus === 'RECONNECTING'
+              ? 'WebSocket Stream Reconnecting...'
+              : 'WebSocket Offline / Reconnecting...')
+          }
           className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono border transition ${
-            isBackendConnected
+            connectionStatus === 'CONNECTED'
               ? 'bg-[#18C997]/10 text-[#18C997] border-[#18C997]/30'
-              : 'bg-[#555E73]/10 text-[#8992A8] border-[#252A3A]'
+              : (connectionStatus === 'RECONNECTING'
+              ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+              : 'bg-[#555E73]/10 text-[#8992A8] border-[#252A3A]')
           }`}
         >
           <span
             className={`w-2 h-2 rounded-full transition ${
-              isBackendConnected
+              connectionStatus === 'CONNECTED'
                 ? 'bg-[#18C997] animate-pulse shadow-[0_0_8px_#18C997]'
-                : 'bg-[#555E73]'
+                : (connectionStatus === 'RECONNECTING'
+                ? 'bg-amber-400 animate-ping'
+                : 'bg-[#555E73]')
             }`}
           />
-          <span>{isBackendConnected ? 'Backend: 8080' : 'Offline Mode'}</span>
+          <span>{connectionStatus === 'CONNECTED' ? 'STOMP: Live' : (connectionStatus === 'RECONNECTING' ? 'Reconnecting...' : 'STOMP: Offline')}</span>
         </div>
+
 
         {/* Role-Specific Primary Action */}
         {activeRole?.id === 'manager' && (
@@ -180,9 +203,11 @@ export default function Topbar({ mobileMenuOpen, setMobileMenuOpen }) {
           className="relative w-9 h-9 rounded-lg border border-[#252A3A] bg-[#131522] hover:bg-[#171A2A] grid place-items-center text-[#8992A8] hover:text-[#F4F7FF] transition"
           title="Notifications & System Activity"
         >
-          <Bell size={15} />
-          {unreadCount > 0 && (
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#FF4D6D] rounded-full shadow-[0_0_6px_#FF4D6D]" />
+          <Bell size={15} className={effectiveUnreadCount > 0 ? "text-[#39D9FF]" : ""} />
+          {effectiveUnreadCount > 0 && (
+            <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-[#FF4D6D] text-white text-[10px] font-mono font-bold flex items-center justify-center shadow-[0_0_8px_#FF4D6D] ring-2 ring-[#080A12] animate-pulse">
+              {effectiveUnreadCount > 99 ? '99+' : effectiveUnreadCount}
+            </span>
           )}
         </button>
 
@@ -241,12 +266,13 @@ export default function Topbar({ mobileMenuOpen, setMobileMenuOpen }) {
                 >
                   <Bell size={13} className="text-[#39D9FF]" />
                   <span>Notifications</span>
-                  {unreadCount > 0 && (
+                  {effectiveUnreadCount > 0 && (
                     <span className="ml-auto text-[10px] px-1.5 py-0.2 rounded-full bg-[#FF4D6D] text-white font-mono font-bold">
-                      {unreadCount}
+                      {effectiveUnreadCount}
                     </span>
                   )}
                 </button>
+
 
                 <button
                   onClick={() => {

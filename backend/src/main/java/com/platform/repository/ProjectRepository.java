@@ -10,6 +10,8 @@ import java.util.Optional;
 @Repository
 public interface ProjectRepository extends JpaRepository<Project, String> {
     Optional<Project> findByProjectKey(String projectKey);
+    boolean existsByProjectKey(String projectKey);
     List<Project> findByClientId(String clientId);
     List<Project> findByProjectManagerId(String projectManagerId);
+    List<Project> findByProjectManagerIdAndStatus(String projectManagerId, Project.ProjectStatus status);
 }

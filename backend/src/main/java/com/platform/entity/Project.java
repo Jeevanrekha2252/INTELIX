@@ -60,6 +60,20 @@ public class Project {
 
     private Double budget = 1250000.0;
 
+    @Column(columnDefinition = "TEXT")
+    private String projectObjective;
+
+    private String category = "General";
+
+    private String projectType = "Fixed Price";
+
+    private String timezone = "UTC+05:30";
+
+    @Column(nullable = false)
+    private int currentWizardStep = 1;
+
+    private String tags;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -67,7 +81,7 @@ public class Project {
     private LocalDateTime updatedAt = LocalDateTime.now();
 
     public enum ProjectStatus {
-        PLANNING, ACTIVE, ON_HOLD, COMPLETED, CANCELLED
+        DRAFT_SETUP, PLANNING, AGREEMENT_PENDING, ACTIVE, ON_HOLD, COMPLETED, CANCELLED
     }
 
     public enum Priority {
@@ -135,6 +149,24 @@ public class Project {
 
     public Double getBudget() { return budget; }
     public void setBudget(Double budget) { this.budget = budget; }
+
+    public String getProjectObjective() { return projectObjective; }
+    public void setProjectObjective(String projectObjective) { this.projectObjective = projectObjective; }
+
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
+
+    public String getProjectType() { return projectType; }
+    public void setProjectType(String projectType) { this.projectType = projectType; }
+
+    public String getTimezone() { return timezone; }
+    public void setTimezone(String timezone) { this.timezone = timezone; }
+
+    public int getCurrentWizardStep() { return currentWizardStep; }
+    public void setCurrentWizardStep(int currentWizardStep) { this.currentWizardStep = currentWizardStep; }
+
+    public String getTags() { return tags; }
+    public void setTags(String tags) { this.tags = tags; }
 
     // Frontend compatibility helpers
     public User getOwner() { return this.projectManager; }

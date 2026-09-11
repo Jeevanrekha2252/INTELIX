@@ -71,6 +71,7 @@ export function getRoleNavGroups(roleId, badges = {}) {
           items: [
             { id: 'Overview', label: 'Dashboard', icon: LayoutDashboard },
             { id: 'Projects', label: 'Projects', icon: FolderKanban, badge: badges.projects },
+            { id: 'Agreement', label: 'Terms & Agreement', icon: FileCheck2 },
             { id: 'Timeline', label: 'Timeline & Milestones', icon: CalendarDays }
           ]
         },
@@ -104,7 +105,8 @@ export function getRoleNavGroups(roleId, badges = {}) {
           title: 'STRATEGIC PORTFOLIO',
           items: [
             { id: 'Overview', label: 'Dashboard', icon: LayoutDashboard },
-            { id: 'Projects', label: 'Portfolio Projects', icon: FolderKanban, badge: badges.projects }
+            { id: 'Projects', label: 'Portfolio Projects', icon: FolderKanban, badge: badges.projects },
+            { id: 'Agreement', label: 'Project Agreements', icon: FileCheck2 }
           ]
         },
         {
@@ -139,7 +141,8 @@ export function getRoleNavGroups(roleId, badges = {}) {
             { id: 'Overview', label: 'Dashboard', icon: LayoutDashboard },
             { id: 'Users', label: 'User Governance', icon: Users2 },
             { id: 'Team Workload', label: 'Team Capacity', icon: Users2 },
-            { id: 'Projects', label: 'Projects Directory', icon: FolderKanban, badge: badges.projects }
+            { id: 'Projects', label: 'Projects Directory', icon: FolderKanban, badge: badges.projects },
+            { id: 'Agreement', label: 'Baseline Governance', icon: FileCheck2 }
           ]
         },
         {
@@ -165,6 +168,7 @@ export function getRoleNavGroups(roleId, badges = {}) {
           items: [
             { id: 'Overview', label: 'Dashboard', icon: LayoutDashboard },
             { id: 'Projects', label: 'Projects', icon: FolderKanban, badge: badges.projects },
+            { id: 'Agreement', label: 'Terms & Agreement', icon: FileCheck2 },
             { id: 'Tasks', label: 'Tasks', icon: CheckSquare, badge: badges.tasks },
             { id: 'Timeline', label: 'Timeline', icon: CalendarDays },
             { id: 'Dependencies', label: 'Dependencies', icon: GitMerge }

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ShieldCheck, Zap, Sparkles } from 'lucide-react';
 import { ProjectProvider, useProject } from './context/ProjectContext';
+import { RealtimeNotificationProvider } from './context/RealtimeNotificationContext';
 import Sidebar from './components/Sidebar';
 import Topbar from './components/Topbar';
 import ToastContainer from './components/ToastContainer';
@@ -30,10 +31,11 @@ import DocumentsView from './views/DocumentsView';
 import NotificationsView from './views/NotificationsView';
 import SettingsView from './views/SettingsView';
 import UsersView from './views/UsersView';
+import AgreementView from './views/AgreementView';
 
 export const ROLE_ALLOWED_VIEWS = {
   manager: [
-    'Overview', 'Projects', 'Tasks', 'Timeline', 'Dependencies',
+    'Overview', 'Projects', 'Agreement', 'Tasks', 'Timeline', 'Dependencies',
     'Risk Center', 'Analytics', 'Team Workload', 'Deliverables',
     'Change Requests', 'Approvals', 'Meetings', 'Documents',
     'Users', 'Notifications', 'Settings'
@@ -44,16 +46,16 @@ export const ROLE_ALLOWED_VIEWS = {
     'Documents', 'Notifications', 'Settings'
   ],
   client: [
-    'Overview', 'Projects', 'Timeline', 'Deliverables',
+    'Overview', 'Projects', 'Agreement', 'Timeline', 'Deliverables',
     'Change Requests', 'Approvals', 'Meetings', 'Documents',
     'Notifications', 'Settings'
   ],
   exec: [
-    'Overview', 'Projects', 'Risk Center', 'Analytics',
+    'Overview', 'Projects', 'Agreement', 'Risk Center', 'Analytics',
     'Deliverables', 'Approvals', 'Documents', 'Notifications', 'Settings'
   ],
   admin: [
-    'Overview', 'Users', 'Team Workload', 'Projects', 'Documents',
+    'Overview', 'Users', 'Team Workload', 'Projects', 'Agreement', 'Documents',
     'Notifications', 'Settings'
   ]
 };
@@ -97,6 +99,8 @@ function AppContent() {
         return <OverviewView />;
       case 'Projects':
         return <ProjectsView />;
+      case 'Agreement':
+        return <AgreementView />;
       case 'Tasks':
         return <TasksView />;
       case 'Timeline':
@@ -216,10 +220,33 @@ function AppContent() {
   );
 }
 
+function RealtimeSyncLayer({ children }) {
+  const { syncFromBackend, projects } = useProject();
+  const currentProjectId = projects && projects.length > 0 ? String(projects[0].id) : null;
+
+  const handleProjectEvent = () => {
+    if (syncFromBackend) {
+      syncFromBackend();
+    }
+  };
+
+  return (
+    <RealtimeNotificationProvider
+      currentProjectId={currentProjectId}
+      onProjectEvent={handleProjectEvent}
+    >
+      {children}
+    </RealtimeNotificationProvider>
+  );
+}
+
 export default function App() {
   return (
     <ProjectProvider>
-      <AppContent />
+      <RealtimeSyncLayer>
+        <AppContent />
+      </RealtimeSyncLayer>
     </ProjectProvider>
   );
 }
+

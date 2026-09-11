@@ -18,15 +18,18 @@ public class MeetingService {
     private final MeetingActionItemRepository actionItemRepository;
     private final TaskService taskService;
     private final AuditService auditService;
+    private final NotificationService notificationService;
 
     public MeetingService(MeetingRepository meetingRepository,
                           MeetingActionItemRepository actionItemRepository,
                           TaskService taskService,
-                          AuditService auditService) {
+                          AuditService auditService,
+                          NotificationService notificationService) {
         this.meetingRepository = meetingRepository;
         this.actionItemRepository = actionItemRepository;
         this.taskService = taskService;
         this.auditService = auditService;
+        this.notificationService = notificationService;
     }
 
     public List<Meeting> getMeetingsForProject(String projectId) {
@@ -51,8 +54,36 @@ public class MeetingService {
         Meeting saved = meetingRepository.save(m);
         auditService.log(dto.getProjectId(), organizer, "MEETING_SCHEDULED", "MEETING", saved.getId(),
                 null, saved.getTitle(), "Scheduled meeting: " + saved.getTitle());
+
+        notificationService.sendToProjectMembers(
+                dto.getProjectId(),
+                com.platform.entity.NotificationType.MEETING_SCHEDULED,
+                "New Meeting: " + saved.getTitle(),
+                String.format("Meeting scheduled for %s (%d mins)", saved.getScheduledAt(), saved.getDurationMinutes()),
+                com.platform.entity.Notification.Severity.INFO,
+                "MEETING",
+                saved.getId(),
+                "/projects/" + dto.getProjectId() + "/meetings",
+                java.util.Map.of("meetingId", saved.getId(), "scheduledAt", saved.getScheduledAt().toString())
+        );
+
+        notificationService.sendToClient(
+                dto.getProjectId(),
+                com.platform.entity.NotificationType.MEETING_SCHEDULED,
+                "Project Meeting Scheduled: " + saved.getTitle(),
+                String.format("Meeting scheduled for %s with project team", saved.getScheduledAt()),
+                com.platform.entity.Notification.Severity.INFO,
+                "MEETING",
+                saved.getId(),
+                "/projects/" + dto.getProjectId() + "/meetings",
+                java.util.Map.of("meetingId", saved.getId(), "scheduledAt", saved.getScheduledAt().toString())
+        );
+
+        notificationService.publishProjectEvent(dto.getProjectId(), "MEETING_SCHEDULED", "MEETING", saved.getId(), saved);
+
         return saved;
     }
+
 
     @Transactional
     public Task convertActionItemToTask(String actionItemId, User manager) {

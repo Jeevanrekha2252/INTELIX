@@ -32,6 +32,14 @@ public class Milestone {
     @Column(nullable = false)
     private int orderIndex = 0;
 
+    @Column(columnDefinition = "TEXT")
+    private String deliverables;
+
+    @Column(columnDefinition = "TEXT")
+    private String acceptanceCriteria;
+
+    private String priority = "HIGH";
+
     public enum MilestoneStatus {
         PENDING, IN_PROGRESS, COMPLETED, DELAYED
     }
@@ -69,4 +77,13 @@ public class Milestone {
 
     public int getOrderIndex() { return orderIndex; }
     public void setOrderIndex(int orderIndex) { this.orderIndex = orderIndex; }
+
+    public String getDeliverables() { return deliverables; }
+    public void setDeliverables(String deliverables) { this.deliverables = deliverables; }
+
+    public String getAcceptanceCriteria() { return acceptanceCriteria; }
+    public void setAcceptanceCriteria(String acceptanceCriteria) { this.acceptanceCriteria = acceptanceCriteria; }
+
+    public String getPriority() { return priority; }
+    public void setPriority(String priority) { this.priority = priority; }
 }

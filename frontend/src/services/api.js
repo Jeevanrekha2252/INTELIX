@@ -105,6 +105,37 @@ export const api = {
     });
   },
 
+  // Project Initiation Wizard & Governance Lifecycle
+  async initiateProject(initiationPayload) {
+    return request('/projects/initiate', {
+      method: 'POST',
+      body: JSON.stringify(initiationPayload)
+    });
+  },
+
+  async getProjectDrafts() {
+    return request('/projects/drafts');
+  },
+
+  async getInitiationData(projectId) {
+    return request(`/projects/${projectId}/initiation-data`);
+  },
+
+  async getClients() {
+    return request('/users/clients');
+  },
+
+  async createClient(clientData) {
+    return request('/users/client', {
+      method: 'POST',
+      body: JSON.stringify(clientData)
+    });
+  },
+
+  async getEmployeesWorkload() {
+    return request('/users/employees-workload');
+  },
+
   // Tasks
   async getProjectTasks(projectId) {
     return request(`/projects/${projectId}/tasks`);
@@ -142,12 +173,13 @@ export const api = {
     });
   },
 
-  async toggleTaskBlocker(id, blockerReason = '') {
+  async toggleTaskBlocker(id, isBlocked = true, blockerReason = '') {
     return request(`/tasks/${id}/blocker`, {
       method: 'POST',
-      body: JSON.stringify({ blockerReason })
+      body: JSON.stringify({ isBlocked, blockerReason })
     });
   },
+
 
   // Dependencies
   async getDependencies(projectId) {
@@ -285,8 +317,17 @@ export const api = {
   },
 
   // Notifications
-  async getNotifications() {
-    return request('/notifications');
+  async getNotifications(page, size) {
+    const query = page !== undefined && size !== undefined ? `?page=${page}&size=${size}` : '';
+    return request(`/notifications${query}`);
+  },
+
+  async getUnreadNotifications() {
+    return request('/notifications/unread');
+  },
+
+  async getUnreadCount() {
+    return request('/notifications/unread-count');
   },
 
   async markNotificationRead(id) {
@@ -299,7 +340,71 @@ export const api = {
     return request('/notifications/read-all', {
       method: 'PUT'
     });
+  },
+
+  async getNotificationPreferences() {
+    return request('/notifications/preferences');
+  },
+
+  async updateNotificationPreferences(preferences) {
+    return request('/notifications/preferences', {
+      method: 'PUT',
+      body: JSON.stringify(preferences)
+    });
+  },
+
+  // Project Governance / Agreement APIs
+  async getProjectAgreement(projectId) {
+    return request(`/projects/${projectId}/agreement`);
+  },
+
+  async createOrUpdateAgreement(projectId, agreementData) {
+    return request(`/projects/${projectId}/agreement`, {
+      method: 'POST',
+      body: JSON.stringify(agreementData)
+    });
+  },
+
+  async submitAgreementToClient(agreementId) {
+    return request(`/agreements/${agreementId}/submit`, {
+      method: 'POST'
+    });
+  },
+
+  async reviewAgreement(agreementId, reviewData) {
+    return request(`/agreements/${agreementId}/review`, {
+      method: 'POST',
+      body: JSON.stringify(reviewData)
+    });
+  },
+
+  async lockAndActivateAgreement(agreementId) {
+    return request(`/agreements/${agreementId}/lock`, {
+      method: 'POST'
+    });
+  },
+
+  async recordPayment(paymentId, paymentData = {}) {
+    return request(`/agreements/payments/${paymentId}/pay`, {
+      method: 'POST',
+      body: JSON.stringify(paymentData)
+    });
+  },
+
+  async requestAgreementAmendment(agreementId, amendmentData) {
+    return request(`/agreements/${agreementId}/amendments`, {
+      method: 'POST',
+      body: JSON.stringify(amendmentData)
+    });
+  },
+
+  async reviewAgreementAmendment(amendmentId, reviewData) {
+    return request(`/agreements/amendments/${amendmentId}/review`, {
+      method: 'POST',
+      body: JSON.stringify(reviewData)
+    });
   }
 };
+
 
 export default api;

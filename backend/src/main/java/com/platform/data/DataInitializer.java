@@ -31,6 +31,11 @@ public class DataInitializer implements CommandLineRunner {
     private final NotificationRepository notificationRepository;
     private final ActivityLogRepository activityLogRepository;
     private final GitCommitRepository gitCommitRepository;
+    private final ProjectAgreementRepository agreementRepository;
+    private final AgreementMilestoneRepository agreementMilestoneRepository;
+    private final PaymentMilestoneRepository paymentMilestoneRepository;
+    private final AgreementResponsibilityRepository responsibilityRepository;
+    private final AgreementAmendmentRepository amendmentRepository;
     private final PasswordEncoder passwordEncoder;
     private final RiskEngineService riskEngineService;
     private final MilestoneService milestoneService;
@@ -50,6 +55,11 @@ public class DataInitializer implements CommandLineRunner {
                            NotificationRepository notificationRepository,
                            ActivityLogRepository activityLogRepository,
                            GitCommitRepository gitCommitRepository,
+                           ProjectAgreementRepository agreementRepository,
+                           AgreementMilestoneRepository agreementMilestoneRepository,
+                           PaymentMilestoneRepository paymentMilestoneRepository,
+                           AgreementResponsibilityRepository responsibilityRepository,
+                           AgreementAmendmentRepository amendmentRepository,
                            PasswordEncoder passwordEncoder,
                            RiskEngineService riskEngineService,
                            MilestoneService milestoneService) {
@@ -68,6 +78,11 @@ public class DataInitializer implements CommandLineRunner {
         this.notificationRepository = notificationRepository;
         this.activityLogRepository = activityLogRepository;
         this.gitCommitRepository = gitCommitRepository;
+        this.agreementRepository = agreementRepository;
+        this.agreementMilestoneRepository = agreementMilestoneRepository;
+        this.paymentMilestoneRepository = paymentMilestoneRepository;
+        this.responsibilityRepository = responsibilityRepository;
+        this.amendmentRepository = amendmentRepository;
         this.passwordEncoder = passwordEncoder;
         this.riskEngineService = riskEngineService;
         this.milestoneService = milestoneService;
@@ -441,6 +456,187 @@ public class DataInitializer implements CommandLineRunner {
         activityLogRepository.save(new ActivityLog(project.getId(), client, "CHANGE_REQUEST_SUBMITTED", "CHANGE_REQUEST", cr.getId(), null, "CR-SCMS-001", "Client submitted change request for facial recognition"));
         activityLogRepository.save(new ActivityLog(project.getId(), dev4, "BLOCKER_REPORTED", "TASK", t107.getId(), null, "Campus IT NOC delay", "Reported firewall ACL blocker on SCMS-107"));
         activityLogRepository.save(new ActivityLog(project.getId(), dev1, "PROGRESS_UPDATED", "TASK", t101.getId(), "15%", "30%", "Updated database partitioning progress"));
+
+        // 14. Project Agreement & Commercial Baseline
+        if (agreementRepository.findByProjectId(project.getId()).isEmpty()) {
+            ProjectAgreement ag = new ProjectAgreement();
+            ag.setId("ag-scms-001");
+            ag.setProject(project);
+            ag.setVersion(1);
+            ag.setStatus(ProjectAgreement.AgreementStatus.LOCKED);
+            ag.setTotalValue(new java.math.BigDecimal("1250000.00"));
+            ag.setCurrency("USD");
+            ag.setEffectiveDate(LocalDate.now().minusDays(90));
+            ag.setBaselineStartDate(project.getStartDate());
+            ag.setBaselineEndDate(project.getEndDate());
+            ag.setCurrentForecastEndDate(project.getEndDate().plusDays(4));
+            ag.setVerifiedBlockingDelayDays(4);
+            ag.setDelayAttribution("Client IT NOC firewall & LDAP endpoint credential delay (+4 days schedule adjustment approved in Amendment #1)");
+            ag.setScopeObjective("Deliver an integrated, enterprise-grade Smart Campus Management System connecting attendance, access control, student records, payments, and faculty workflows.");
+            ag.setIncludedModules("UI/UX Design System, Database Partitioning, Core Backend Microservices, React Web Portal, Mobile Attendance Module, Automated Testing Suite, Staging Deployment.");
+            ag.setExcludedModules("Hardware beacon physical installation, campus cabling, and third-party biometric sensor procurement.");
+            ag.setAssumptions("Campus IT department provides LDAP/Active Directory endpoints within 10 days of milestone kickoff; client approvals returned within 5 business days.");
+            ag.setAgreedDeliverables("Design Tokens Specification v1.0, PostgreSQL Partitioned Schema DDL, RESTful API Gateway OpenAPI Spec, Mobile Attendance APK v1.0-RC1, Production Deployment Playbook.");
+            ag.setCreatedBy(manager);
+            ag.setApprovedByManager(manager);
+            ag.setApprovedByClient(client);
+            ag.setCreatedAt(LocalDateTime.now().minusDays(90));
+            ag.setApprovedAt(LocalDateTime.now().minusDays(85));
+            ag = agreementRepository.save(ag);
+
+            // Seed Agreement Milestones
+            AgreementMilestone agm1 = new AgreementMilestone();
+            agm1.setId("agm-001");
+            agm1.setAgreement(ag);
+            agm1.setMilestone(m1);
+            agm1.setName(m1.getName());
+            agm1.setDescription(m1.getDescription());
+            agm1.setTargetDate(m1.getDueDate());
+            agm1.setDeliverables("UI Design Tokens Specification v1.0, Figma Prototypes, Component Library");
+            agm1.setCompletionRequirement("All responsive views approved by Design and Product Councils");
+            agm1.setAcceptanceCriteria("Client design sign-off and 100% component test coverage");
+            agreementMilestoneRepository.save(agm1);
+
+            AgreementMilestone agm2 = new AgreementMilestone();
+            agm2.setId("agm-002");
+            agm2.setAgreement(ag);
+            agm2.setMilestone(m2);
+            agm2.setName(m2.getName());
+            agm2.setDescription(m2.getDescription());
+            agm2.setTargetDate(m2.getDueDate());
+            agm2.setDeliverables("PostgreSQL Partitioned Schema DDL, TimescaleDB Hypertable Setup, Redis Cache");
+            agm2.setCompletionRequirement("Zero query execution > 60ms under 5,000 simulated sensors");
+            agm2.setAcceptanceCriteria("Database benchmark report signed off by Lead DBA");
+            agreementMilestoneRepository.save(agm2);
+
+            AgreementMilestone agm3 = new AgreementMilestone();
+            agm3.setId("agm-003");
+            agm3.setAgreement(ag);
+            agm3.setMilestone(m3);
+            agm3.setName(m3.getName());
+            agm3.setDescription(m3.getDescription());
+            agm3.setTargetDate(m3.getDueDate());
+            agm3.setDeliverables("RESTful API Gateway, OAuth 2.1 Security Layer, Swagger 3.1 Spec");
+            agm3.setCompletionRequirement("API passes 85%+ unit and integration test coverage");
+            agm3.setAcceptanceCriteria("Zero high/critical OWASP security scan vulnerabilities");
+            agreementMilestoneRepository.save(agm3);
+
+            PaymentMilestone pm1 = new PaymentMilestone();
+            pm1.setId("pay-001");
+            pm1.setAgreement(ag);
+            pm1.setMilestone(m1);
+            pm1.setTitle("Initial Setup & UI/UX Sign-Off (20% Baseline)");
+            pm1.setTriggerType(PaymentMilestone.TriggerType.PERCENTAGE);
+            pm1.setTriggerValue(20.0);
+            pm1.setTargetDate(LocalDate.now().minusDays(70));
+            pm1.setPaymentPercentage(new java.math.BigDecimal("20.0"));
+            pm1.setPaymentAmount(new java.math.BigDecimal("250000.00"));
+            pm1.setStatus(PaymentMilestone.PaymentStatus.PAID);
+            pm1.setTriggeredAt(LocalDateTime.now().minusDays(70));
+            pm1.setPaidAt(LocalDateTime.now().minusDays(65));
+            paymentMilestoneRepository.save(pm1);
+
+            PaymentMilestone pm2 = new PaymentMilestone();
+            pm2.setId("pay-002");
+            pm2.setAgreement(ag);
+            pm2.setMilestone(m3);
+            pm2.setTitle("Database Architecture & Backend APIs Core (50% Completion)");
+            pm2.setTriggerType(PaymentMilestone.TriggerType.PERCENTAGE);
+            pm2.setTriggerValue(50.0);
+            pm2.setTargetDate(LocalDate.now().minusDays(10));
+            pm2.setPaymentPercentage(new java.math.BigDecimal("30.0"));
+            pm2.setPaymentAmount(new java.math.BigDecimal("375000.00"));
+            pm2.setStatus(PaymentMilestone.PaymentStatus.TRIGGERED);
+            pm2.setTriggeredAt(LocalDateTime.now().minusDays(5));
+            paymentMilestoneRepository.save(pm2);
+
+            PaymentMilestone pm3 = new PaymentMilestone();
+            pm3.setId("pay-003");
+            pm3.setAgreement(ag);
+            pm3.setMilestone(m4);
+            pm3.setTitle("Frontend Integration & Mobile Attendance (80% Completion)");
+            pm3.setTriggerType(PaymentMilestone.TriggerType.PERCENTAGE);
+            pm3.setTriggerValue(80.0);
+            pm3.setTargetDate(LocalDate.now().plusDays(35));
+            pm3.setPaymentPercentage(new java.math.BigDecimal("30.0"));
+            pm3.setPaymentAmount(new java.math.BigDecimal("375000.00"));
+            pm3.setStatus(PaymentMilestone.PaymentStatus.PENDING);
+            paymentMilestoneRepository.save(pm3);
+
+            PaymentMilestone pm4 = new PaymentMilestone();
+            pm4.setId("pay-004");
+            pm4.setAgreement(ag);
+            pm4.setMilestone(m6);
+            pm4.setTitle("Final UAT Sign-off & Production Rollout (100% Handover)");
+            pm4.setTriggerType(PaymentMilestone.TriggerType.PERCENTAGE);
+            pm4.setTriggerValue(100.0);
+            pm4.setTargetDate(LocalDate.now().plusDays(80));
+            pm4.setPaymentPercentage(new java.math.BigDecimal("20.0"));
+            pm4.setPaymentAmount(new java.math.BigDecimal("250000.00"));
+            pm4.setStatus(PaymentMilestone.PaymentStatus.PENDING);
+            paymentMilestoneRepository.save(pm4);
+
+            AgreementResponsibility r1 = new AgreementResponsibility();
+            r1.setId("resp-001");
+            r1.setAgreement(ag);
+            r1.setOwnerRole(AgreementResponsibility.OwnerRole.CLIENT);
+            r1.setOwner(client);
+            r1.setTitle("Campus LDAP / SSO API Credentials");
+            r1.setDescription("Provide test credentials and firewall whitelist for student database integration");
+            r1.setDueDate(LocalDate.now().minusDays(75));
+            r1.setStatus(AgreementResponsibility.ResponsibilityStatus.COMPLETED);
+            responsibilityRepository.save(r1);
+
+            AgreementResponsibility r2 = new AgreementResponsibility();
+            r2.setId("resp-002");
+            r2.setAgreement(ag);
+            r2.setOwnerRole(AgreementResponsibility.OwnerRole.CLIENT);
+            r2.setOwner(client);
+            r2.setTitle("Milestone Review & Sign-Off");
+            r2.setDescription("Review and provide formal deliverable approvals within 5 business days of submission");
+            r2.setDueDate(project.getEndDate());
+            r2.setStatus(AgreementResponsibility.ResponsibilityStatus.AGREED);
+            responsibilityRepository.save(r2);
+
+            AgreementResponsibility r3 = new AgreementResponsibility();
+            r3.setId("resp-003");
+            r3.setAgreement(ag);
+            r3.setOwnerRole(AgreementResponsibility.OwnerRole.MANAGER);
+            r3.setOwner(manager);
+            r3.setTitle("Sprint Planning & Resource Allocation");
+            r3.setDescription("Maintain active engineering schedule and manage critical path dependencies");
+            r3.setDueDate(project.getEndDate());
+            r3.setStatus(AgreementResponsibility.ResponsibilityStatus.AGREED);
+            responsibilityRepository.save(r3);
+
+            AgreementResponsibility r4 = new AgreementResponsibility();
+            r4.setId("resp-004");
+            r4.setAgreement(ag);
+            r4.setOwnerRole(AgreementResponsibility.OwnerRole.TEAM);
+            r4.setOwner(dev1);
+            r4.setTitle("Technical Task Execution & Testing");
+            r4.setDescription("Deliver high-quality code adhering to 85%+ unit test coverage and zero critical vulnerabilities");
+            r4.setDueDate(project.getEndDate());
+            r4.setStatus(AgreementResponsibility.ResponsibilityStatus.AGREED);
+            responsibilityRepository.save(r4);
+
+            AgreementAmendment am1 = new AgreementAmendment();
+            am1.setId("amend-001");
+            am1.setAgreement(ag);
+            am1.setAmendmentNumber(1);
+            am1.setTitle("Contract Schedule Adjustment for LDAP Firewall Delay");
+            am1.setCategory(AgreementAmendment.AmendmentCategory.DEADLINE);
+            am1.setReason("Campus IT department took 4 business days to clear security firewall permissions for LDAP integration testing. Baseline schedule adjusted by verified 4-day blocking window.");
+            am1.setOldValue("Contract Baseline Deadline: 2026-11-30");
+            am1.setNewValue("Adjusted Forecast Deadline: 2026-12-04 (Original Baseline preserved)");
+            am1.setRequestedBy(manager);
+            am1.setReviewedBy(client);
+            am1.setStatus(AgreementAmendment.AmendmentStatus.APPROVED);
+            am1.setEffectiveDate(LocalDate.now().minusDays(50));
+            am1.setCreatedAt(LocalDateTime.now().minusDays(50));
+            am1.setApprovedAt(LocalDateTime.now().minusDays(48));
+            amendmentRepository.save(am1);
+        }
 
         // Trigger Risk Calculation on all tasks
         riskEngineService.recalculateProjectRisks(project.getId());

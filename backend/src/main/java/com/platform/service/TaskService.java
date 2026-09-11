@@ -25,6 +25,7 @@ public class TaskService {
     private final NotificationService notificationService;
     private final MilestoneService milestoneService;
     private final RiskEngineService riskEngineService;
+    private final AgreementService agreementService;
 
     public TaskService(TaskRepository taskRepository,
                        ProjectRepository projectRepository,
@@ -32,7 +33,8 @@ public class TaskService {
                        AuditService auditService,
                        NotificationService notificationService,
                        MilestoneService milestoneService,
-                       RiskEngineService riskEngineService) {
+                       RiskEngineService riskEngineService,
+                       @org.springframework.context.annotation.Lazy AgreementService agreementService) {
         this.taskRepository = taskRepository;
         this.projectRepository = projectRepository;
         this.userRepository = userRepository;
@@ -40,6 +42,7 @@ public class TaskService {
         this.notificationService = notificationService;
         this.milestoneService = milestoneService;
         this.riskEngineService = riskEngineService;
+        this.agreementService = agreementService;
     }
 
     public List<Task> getTasksForProject(String projectId) {
@@ -87,16 +90,21 @@ public class TaskService {
                 null, saved.getTitle(), "Created task " + saved.getTaskKey());
 
         if (task.getAssignee() != null) {
-            notificationService.sendNotification(
+            notificationService.sendToUser(
                     task.getAssignee().getId(),
+                    com.platform.entity.NotificationType.TASK_ASSIGNED,
                     "New Task Assigned: " + task.getTaskKey(),
                     "You have been assigned: " + task.getTitle(),
                     Notification.Severity.INFO,
+                    saved.getProjectId(),
                     "TASK",
-                    "/tasks/" + saved.getId()
+                    saved.getId(),
+                    "/tasks/" + saved.getId(),
+                    java.util.Map.of("taskKey", task.getTaskKey(), "taskId", saved.getId(), "priority", task.getPriority().name())
             );
         }
 
+        notificationService.publishProjectEvent(saved.getProjectId(), "TASK_CREATED", "TASK", saved.getId(), saved);
         postTaskUpdate(saved);
         return saved;
     }
@@ -104,6 +112,8 @@ public class TaskService {
     @Transactional
     public Task updateTask(String taskId, TaskDtos.UpdateTaskRequest request, User actor) {
         Task task = getTaskById(taskId);
+        User oldAssignee = task.getAssignee();
+        Task.TaskStatus oldStatus = task.getStatus();
 
         if (request.getTitle() != null) task.setTitle(request.getTitle());
         if (request.getDescription() != null) task.setDescription(request.getDescription());
@@ -125,7 +135,6 @@ public class TaskService {
         }
 
         if (request.getStatus() != null && request.getStatus() != task.getStatus()) {
-            Task.TaskStatus oldStatus = task.getStatus();
             task.setStatus(request.getStatus());
             auditService.log(task.getProjectId(), actor, "STATUS_CHANGED", "TASK", task.getId(),
                     oldStatus.name(), task.getStatus().name(), "Changed status of " + task.getTaskKey());
@@ -133,12 +142,40 @@ public class TaskService {
 
         if (request.getAssigneeId() != null) {
             User newAssignee = userRepository.findById(request.getAssigneeId()).orElse(null);
-            User oldAssignee = task.getAssignee();
             task.setAssignee(newAssignee);
             auditService.log(task.getProjectId(), actor, "TASK_REASSIGNED", "TASK", task.getId(),
                     oldAssignee != null ? oldAssignee.getFullName() : "None",
                     newAssignee != null ? newAssignee.getFullName() : "None",
                     "Reassigned task " + task.getTaskKey());
+
+            if (newAssignee != null && (oldAssignee == null || !oldAssignee.getId().equals(newAssignee.getId()))) {
+                notificationService.sendToUser(
+                        newAssignee.getId(),
+                        com.platform.entity.NotificationType.TASK_ASSIGNED,
+                        "Task Assigned: " + task.getTaskKey(),
+                        "You have been assigned: " + task.getTitle(),
+                        Notification.Severity.INFO,
+                        task.getProjectId(),
+                        "TASK",
+                        task.getId(),
+                        "/tasks/" + task.getId(),
+                        java.util.Map.of("taskKey", task.getTaskKey(), "taskId", task.getId())
+                );
+            }
+            if (oldAssignee != null && (newAssignee == null || !oldAssignee.getId().equals(newAssignee.getId()))) {
+                notificationService.sendToUser(
+                        oldAssignee.getId(),
+                        com.platform.entity.NotificationType.TASK_REASSIGNED,
+                        "Task Reassigned: " + task.getTaskKey(),
+                        "Task '" + task.getTitle() + "' was reassigned to " + (newAssignee != null ? newAssignee.getFullName() : "unassigned"),
+                        Notification.Severity.INFO,
+                        task.getProjectId(),
+                        "TASK",
+                        task.getId(),
+                        "/tasks/" + task.getId(),
+                        java.util.Map.of("taskKey", task.getTaskKey())
+                );
+            }
         }
 
         if (request.getIsBlocked() != null) {
@@ -147,6 +184,21 @@ public class TaskService {
         }
 
         Task saved = taskRepository.save(task);
+
+        if (oldStatus != Task.TaskStatus.COMPLETED && saved.getStatus() == Task.TaskStatus.COMPLETED) {
+            notificationService.sendToProjectManagers(
+                    saved.getProjectId(),
+                    com.platform.entity.NotificationType.TASK_COMPLETED,
+                    "Task Completed: " + saved.getTaskKey(),
+                    (actor != null ? actor.getFullName() : "Assignee") + " completed " + saved.getTitle(),
+                    Notification.Severity.SUCCESS,
+                    "TASK",
+                    saved.getId(),
+                    "/tasks/" + saved.getId(),
+                    java.util.Map.of("taskKey", saved.getTaskKey())
+            );
+        }
+
         postTaskUpdate(saved);
         return saved;
     }
@@ -155,6 +207,7 @@ public class TaskService {
     public Task updateProgress(String taskId, TaskDtos.ProgressUpdateRequest request, User actor) {
         Task task = getTaskById(taskId);
         int oldProgress = task.getProgress();
+        Task.TaskStatus oldStatus = task.getStatus();
         task.setProgress(request.getProgress());
         if (request.getActualHours() != null) {
             task.setActualHours(request.getActualHours());
@@ -167,6 +220,21 @@ public class TaskService {
                 oldProgress + "%", task.getProgress() + "%", "Progress set to " + task.getProgress() + "%");
 
         Task saved = taskRepository.save(task);
+
+        if (oldStatus != Task.TaskStatus.COMPLETED && saved.getStatus() == Task.TaskStatus.COMPLETED) {
+            notificationService.sendToProjectManagers(
+                    saved.getProjectId(),
+                    com.platform.entity.NotificationType.TASK_COMPLETED,
+                    "Task Completed: " + saved.getTaskKey(),
+                    (actor != null ? actor.getFullName() : "Assignee") + " marked " + saved.getTitle() + " as 100% complete",
+                    Notification.Severity.SUCCESS,
+                    "TASK",
+                    saved.getId(),
+                    "/tasks/" + saved.getId(),
+                    java.util.Map.of("taskKey", saved.getTaskKey())
+            );
+        }
+
         postTaskUpdate(saved);
         return saved;
     }
@@ -184,6 +252,21 @@ public class TaskService {
                 old.name(), task.getStatus().name(), "Status changed to " + task.getStatus().name());
 
         Task saved = taskRepository.save(task);
+
+        if (old != Task.TaskStatus.COMPLETED && saved.getStatus() == Task.TaskStatus.COMPLETED) {
+            notificationService.sendToProjectManagers(
+                    saved.getProjectId(),
+                    com.platform.entity.NotificationType.TASK_COMPLETED,
+                    "Task Completed: " + saved.getTaskKey(),
+                    (actor != null ? actor.getFullName() : "Assignee") + " moved " + saved.getTitle() + " to COMPLETED",
+                    Notification.Severity.SUCCESS,
+                    "TASK",
+                    saved.getId(),
+                    "/tasks/" + saved.getId(),
+                    java.util.Map.of("taskKey", saved.getTaskKey())
+            );
+        }
+
         postTaskUpdate(saved);
         return saved;
     }
@@ -195,20 +278,50 @@ public class TaskService {
         task.setBlockerReason(request.getBlockerReason());
         if (request.isBlocked()) {
             task.setStatus(Task.TaskStatus.BLOCKED);
+        } else if (task.getStatus() == Task.TaskStatus.BLOCKED) {
+            task.setStatus(Task.TaskStatus.IN_PROGRESS);
         }
 
-        auditService.log(task.getProjectId(), reporter, "BLOCKER_REPORTED", "TASK", task.getId(),
-                null, request.getBlockerReason(), "Reported blocker: " + request.getBlockerReason());
+        auditService.log(task.getProjectId(), reporter, request.isBlocked() ? "BLOCKER_REPORTED" : "BLOCKER_RESOLVED", "TASK", task.getId(),
+                null, request.getBlockerReason(), "Blocker update: " + request.getBlockerReason());
 
-        Project project = projectRepository.findById(task.getProjectId()).orElse(null);
-        if (project != null && project.getProjectManager() != null) {
-            notificationService.sendNotification(
-                    project.getProjectManager().getId(),
+        if (request.isBlocked()) {
+            notificationService.sendToProjectManagers(
+                    task.getProjectId(),
+                    com.platform.entity.NotificationType.BLOCKER_REPORTED,
                     "CRITICAL: Blocker Reported on " + task.getTaskKey(),
                     String.format("%s reported blocker on '%s': %s", reporter.getFullName(), task.getTitle(), request.getBlockerReason()),
                     Notification.Severity.CRITICAL,
                     "TASK",
-                    "/projects/" + project.getId() + "/tasks"
+                    task.getId(),
+                    "/projects/" + task.getProjectId() + "/tasks",
+                    java.util.Map.of("taskKey", task.getTaskKey(), "taskId", task.getId(), "reason", request.getBlockerReason() != null ? request.getBlockerReason() : "")
+            );
+            notificationService.publishProjectEvent(
+                    task.getProjectId(),
+                    "BLOCKER_FLAGGED",
+                    "TASK",
+                    task.getId(),
+                    java.util.Map.of("taskId", task.getId(), "taskKey", task.getTaskKey(), "isBlocked", true, "reason", request.getBlockerReason() != null ? request.getBlockerReason() : "", "status", "BLOCKED")
+            );
+        } else {
+            notificationService.sendToProjectManagers(
+                    task.getProjectId(),
+                    com.platform.entity.NotificationType.BLOCKER_RESOLVED,
+                    "Blocker Resolved: " + task.getTaskKey(),
+                    String.format("%s resolved blocker on '%s'", reporter.getFullName(), task.getTitle()),
+                    Notification.Severity.SUCCESS,
+                    "TASK",
+                    task.getId(),
+                    "/projects/" + task.getProjectId() + "/tasks",
+                    java.util.Map.of("taskKey", task.getTaskKey(), "taskId", task.getId())
+            );
+            notificationService.publishProjectEvent(
+                    task.getProjectId(),
+                    "BLOCKER_RESOLVED",
+                    "TASK",
+                    task.getId(),
+                    java.util.Map.of("taskId", task.getId(), "taskKey", task.getTaskKey(), "isBlocked", false, "status", task.getStatus().name())
             );
         }
 
@@ -222,5 +335,13 @@ public class TaskService {
             milestoneService.recalculateMilestoneProgress(task.getMilestoneId());
         }
         riskEngineService.recalculateProjectRisks(task.getProjectId());
+        notificationService.publishProjectEvent(task.getProjectId(), "TASK_UPDATED", "TASK", task.getId(), task);
+
+        if (task.getProjectId() != null) {
+            projectRepository.findById(task.getProjectId()).ifPresent(proj -> {
+                agreementService.checkAndTriggerPayments(proj.getId(), proj.getOverallProgress(), task.getMilestoneId());
+            });
+        }
     }
 }
+

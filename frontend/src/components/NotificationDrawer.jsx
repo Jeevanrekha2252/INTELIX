@@ -8,24 +8,58 @@ import {
   Info,
   Sparkles,
   Activity,
-  CheckCheck
+  CheckCheck,
+  ExternalLink
 } from 'lucide-react';
+import { useRealtimeNotifications } from '../context/RealtimeNotificationContext';
 import { useProject } from '../context/ProjectContext';
 
 export default function NotificationDrawer() {
   const {
     isNotificationDrawerOpen,
     setIsNotificationDrawerOpen,
-    notifications,
     activity,
-    markNotificationRead,
-    markAllNotificationsRead,
-    unreadCount
+    setActiveView
   } = useProject();
+
+  let notifications = [];
+  let unreadCount = 0;
+  let markNotificationRead = () => {};
+  let markAllNotificationsRead = () => {};
+
+  try {
+    const realtime = useRealtimeNotifications();
+    notifications = realtime.notifications || [];
+    unreadCount = realtime.unreadCount || 0;
+    markNotificationRead = realtime.markNotificationRead;
+    markAllNotificationsRead = realtime.markAllNotificationsRead;
+  } catch {
+    // Graceful fallback
+  }
 
   const [activeTab, setActiveTab] = useState('notifications');
 
   if (!isNotificationDrawerOpen) return null;
+
+  const handleNotificationClick = (notif) => {
+    markNotificationRead(notif.id);
+    if (notif.relatedEntityType === 'TASK') {
+      setActiveView('Tasks');
+      setIsNotificationDrawerOpen(false);
+    } else if (notif.relatedEntityType === 'CHANGE_REQUEST') {
+      setActiveView('Change Requests');
+      setIsNotificationDrawerOpen(false);
+    } else if (notif.relatedEntityType === 'APPROVAL') {
+      setActiveView('Approvals');
+      setIsNotificationDrawerOpen(false);
+    } else if (notif.relatedEntityType === 'MEETING') {
+      setActiveView('Meetings');
+      setIsNotificationDrawerOpen(false);
+    } else if (notif.relatedEntityType === 'PROJECT') {
+      setActiveView('Overview');
+      setIsNotificationDrawerOpen(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
@@ -45,7 +79,7 @@ export default function NotificationDrawer() {
                   </span>
                 )}
               </div>
-              <div className="text-[10px] text-slate-400">Live project event stream</div>
+              <div className="text-[10px] text-slate-400">Live STOMP event stream</div>
             </div>
           </div>
 
@@ -79,7 +113,7 @@ export default function NotificationDrawer() {
             }`}
           >
             <Activity size={13} />
-            <span>Audit Log ({activity.length})</span>
+            <span>Audit Log ({activity ? activity.length : 0})</span>
           </button>
         </div>
 
@@ -98,53 +132,60 @@ export default function NotificationDrawer() {
         {/* List */}
         <div className="flex-1 overflow-y-auto p-4 space-y-2.5">
           {activeTab === 'notifications' ? (
-            notifications.map(notif => {
-              const isDanger = notif.type === 'danger';
-              const isAi = notif.type === 'ai';
-              const isSuccess = notif.type === 'success';
+            notifications.length === 0 ? (
+              <div className="py-12 text-center text-xs text-slate-400">
+                No active notifications.
+              </div>
+            ) : (
+              notifications.map(notif => {
+                const isCritical = notif.severity === 'CRITICAL' || notif.severity === 'HIGH' || notif.type === 'danger';
+                const isWarning = notif.severity === 'WARNING' || notif.type === 'warning';
+                const isSuccess = notif.severity === 'SUCCESS' || notif.type === 'success';
+                const isUnread = notif.unread || !notif.isRead;
 
-              return (
-                <div
-                  key={notif.id}
-                  onClick={() => markNotificationRead(notif.id)}
-                  className={`p-3 rounded-xl border transition cursor-pointer ${
-                    notif.unread
-                      ? 'bg-slate-900 border-blue-500/40'
-                      : 'bg-slate-950/60 border-slate-800/70 opacity-70'
-                  }`}
-                >
-                  <div className="flex items-start gap-2.5">
-                    <div
-                      className={`w-6 h-6 rounded-md grid place-items-center shrink-0 mt-0.5 ${
-                        isDanger
-                          ? 'bg-rose-500/20 text-rose-400'
-                          : isAi
-                          ? 'bg-indigo-500/20 text-indigo-400'
-                          : isSuccess
-                          ? 'bg-emerald-500/20 text-emerald-400'
-                          : 'bg-blue-500/20 text-blue-400'
-                      }`}
-                    >
-                      {isDanger ? <AlertOctagon size={14} /> : isAi ? <Sparkles size={14} /> : isSuccess ? <CheckCircle2 size={14} /> : <Info size={14} />}
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs font-bold text-white truncate">{notif.title}</span>
-                        <span className="text-[10px] text-slate-400 shrink-0">{notif.time}</span>
+                return (
+                  <div
+                    key={notif.id}
+                    onClick={() => handleNotificationClick(notif)}
+                    className={`p-3 rounded-xl border transition cursor-pointer ${
+                      isUnread
+                        ? 'bg-slate-900 border-blue-500/40 hover:border-blue-500/70'
+                        : 'bg-slate-950/60 border-slate-800/70 opacity-70 hover:opacity-100'
+                    }`}
+                  >
+                    <div className="flex items-start gap-2.5">
+                      <div
+                        className={`w-6 h-6 rounded-md grid place-items-center shrink-0 mt-0.5 ${
+                          isCritical
+                            ? 'bg-rose-500/20 text-rose-400'
+                            : isWarning
+                            ? 'bg-amber-500/20 text-amber-400'
+                            : isSuccess
+                            ? 'bg-emerald-500/20 text-emerald-400'
+                            : 'bg-blue-500/20 text-blue-400'
+                        }`}
+                      >
+                        {isCritical ? <AlertOctagon size={14} /> : isWarning ? <AlertTriangle size={14} /> : isSuccess ? <CheckCircle2 size={14} /> : <Info size={14} />}
                       </div>
-                      <p className="text-xs text-slate-300 mt-0.5 leading-relaxed">{notif.message}</p>
-                    </div>
 
-                    {notif.unread && (
-                      <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0 mt-1" />
-                    )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-bold text-white truncate">{notif.title}</span>
+                          <span className="text-[10px] text-slate-400 shrink-0">{notif.time}</span>
+                        </div>
+                        <p className="text-xs text-slate-300 mt-0.5 leading-relaxed">{notif.message}</p>
+                      </div>
+
+                      {isUnread && (
+                        <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0 mt-1" />
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })
+                );
+              })
+            )
           ) : (
-            activity.map(act => (
+            (activity || []).map(act => (
               <div key={act.id} className="flex gap-2.5 p-2.5 rounded-xl bg-slate-900 border border-slate-800">
                 <div
                   className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${

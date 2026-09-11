@@ -26,6 +26,7 @@ public class RiskEngineTest {
     private TaskDependencyRepository dependencyRepository;
     private RiskAssessmentRepository riskAssessmentRepository;
     private ProjectRepository projectRepository;
+    private com.platform.service.NotificationService notificationService;
     private RiskEngineService riskEngineService;
 
     @BeforeEach
@@ -34,10 +35,12 @@ public class RiskEngineTest {
         dependencyRepository = Mockito.mock(TaskDependencyRepository.class);
         riskAssessmentRepository = Mockito.mock(RiskAssessmentRepository.class);
         projectRepository = Mockito.mock(ProjectRepository.class);
-        riskEngineService = new RiskEngineService(taskRepository, dependencyRepository, riskAssessmentRepository, projectRepository);
+        notificationService = Mockito.mock(com.platform.service.NotificationService.class);
+        riskEngineService = new RiskEngineService(taskRepository, dependencyRepository, riskAssessmentRepository, projectRepository, notificationService);
 
         when(dependencyRepository.findBySuccessorTaskId(anyString())).thenReturn(Collections.emptyList());
     }
+
 
     @Test
     public void testCompletedTaskHasZeroRisk() {

@@ -498,6 +498,299 @@ export const INITIAL_USERS = [
   }
 ];
 
+export const INITIAL_AGREEMENTS = {
+  1: {
+    id: 'ag-p1-2026',
+    projectId: 1,
+    projectKey: 'IX-IOT',
+    projectName: 'Smart Campus 360 — IoT Telemetry Network',
+    version: 2,
+    status: 'LOCKED',
+    totalValue: 10000,
+    currency: 'USD',
+    effectiveDate: '2026-08-01',
+    baselineStartDate: '2026-08-01',
+    baselineEndDate: '2026-09-30',
+    currentForecastEndDate: '2026-10-04',
+    verifiedBlockingDelayDays: 4,
+    delayAttribution: 'Client Dependency: Third-party Cloud API credentials delayed by 4 business days (10 Sep → 14 Sep)',
+    reviewPeriodDays: 5,
+    approvalPeriodDays: 3,
+    scopeObjective: 'Deliver an enterprise Smart Campus & IoT Telemetry Network platform with automated billing and access control.',
+    includedModules: '• RFID Access Gateways\n• TimescaleDB Telemetry Broker\n• Student & Faculty Smart Presence Dashboard\n• Automated Payment Gateway for Campus Services\n• Real-Time Monitoring & Alerts',
+    excludedModules: '• Custom hardware fabrication / PCB manufacturing\n• Legacy university ERP database schema refactoring outside agreed API contracts\n• Physical wiring and solar panel installations',
+    assumptions: '• Client provides active AWS staging credentials on Day 1\n• PostgreSQL 15+ instance with 32GB RAM provisioned\n• Client reviews returned within 5 business day SLA',
+    agreedDeliverables: '1. Architecture Specification & Swagger Contract\n2. Reactive Web Dashboard with Sub-Second Streaming\n3. Ingestion Gateway with 99.9% Uptime SLA\n4. Deployment Runbook & User Training Manual',
+    createdByName: 'Ishaan Mantri',
+    approvedByManagerName: 'Ishaan Mantri (Project Manager)',
+    approvedByClientName: 'David Vance (National University Council)',
+    createdAt: '2026-08-01T10:00:00Z',
+    approvedAt: '2026-08-05T16:30:00Z',
+    milestones: [
+      {
+        id: 'agm-1',
+        milestoneId: 1,
+        name: 'Architecture & Ingestion Pipeline Setup',
+        description: 'Establish TimescaleDB schema partitioning, authentication RBAC, and gateway ingestion endpoints.',
+        targetDate: '2026-08-20',
+        deliverables: 'Architecture blueprint, database migrations, authentication service.',
+        completionRequirement: 'All schema scripts run successfully, OAuth 2.1 integration passes penetration test.',
+        acceptanceCriteria: 'Latency < 45ms under 2,000 simulated sensors, client sign-off received.'
+      },
+      {
+        id: 'agm-2',
+        milestoneId: 2,
+        name: 'Backend Integration & Webhook Gateways',
+        description: 'Deliver core REST APIs, stream processors, and external payment webhooks.',
+        targetDate: '2026-09-05',
+        deliverables: 'Completed Payment API, Sensor Webhook Consumer, Automated Alerts.',
+        completionRequirement: 'API passes all defined unit & integration tests (>85% coverage).',
+        acceptanceCriteria: 'Zero unhandled exceptions, verified idempotency on financial transactions.'
+      },
+      {
+        id: 'agm-3',
+        milestoneId: 3,
+        name: 'Frontend Command Center & Telemetry Charts',
+        description: 'Interactive analytics dashboard, real-time WebSockets, and role-based UI screens.',
+        targetDate: '2026-09-20',
+        deliverables: 'React Web Application, Live WebSocket feed, Drill-down modals.',
+        completionRequirement: 'Sub-second chart streaming, responsive layouts on mobile & desktop.',
+        acceptanceCriteria: 'User acceptance testing approved by Campus Council representatives.'
+      },
+      {
+        id: 'agm-4',
+        milestoneId: 4,
+        name: 'Final Acceptance, Load Testing & Production Go-Live',
+        description: 'End-to-end load testing, security audit, staging sign-off, and production deployment.',
+        targetDate: '2026-09-30',
+        deliverables: 'Final deployment runbook, production binary, signed handover report.',
+        completionRequirement: '99.9% uptime SLA verification in 72-hour soak test.',
+        acceptanceCriteria: 'Formal client acceptance certificate executed.'
+      }
+    ],
+    paymentMilestones: [
+      {
+        id: 'pay-1',
+        title: 'Milestone 1: Initiation & Architecture Sign-Off',
+        triggerType: 'PERCENTAGE',
+        triggerValue: 20,
+        targetDate: '2026-08-20',
+        paymentPercentage: 20,
+        paymentAmount: 2000,
+        status: 'PAID',
+        paidAt: '2026-08-21T11:00:00Z'
+      },
+      {
+        id: 'pay-2',
+        title: 'Milestone 2: Core Integration & Backend APIs',
+        triggerType: 'PERCENTAGE',
+        triggerValue: 50,
+        targetDate: '2026-09-05',
+        paymentPercentage: 30,
+        paymentAmount: 3000,
+        status: 'PAID',
+        paidAt: '2026-09-07T14:30:00Z'
+      },
+      {
+        id: 'pay-3',
+        title: 'Milestone 3: UI Command Center & Staging Validation',
+        triggerType: 'PERCENTAGE',
+        triggerValue: 80,
+        targetDate: '2026-09-20',
+        paymentPercentage: 20,
+        paymentAmount: 2000,
+        status: 'TRIGGERED',
+        triggeredAt: '2026-09-18T09:15:00Z'
+      },
+      {
+        id: 'pay-4',
+        title: 'Milestone 4: Production Go-Live & Final Acceptance',
+        triggerType: 'PERCENTAGE',
+        triggerValue: 100,
+        targetDate: '2026-09-30',
+        paymentPercentage: 30,
+        paymentAmount: 3000,
+        status: 'PENDING'
+      }
+    ],
+    responsibilities: [
+      {
+        id: 'resp-c1',
+        ownerRole: 'CLIENT',
+        title: 'Provide Cloud Sandbox Credentials',
+        description: 'Deliver root staging AWS & VPN gateway credentials on Day 1.',
+        dueDate: '2026-08-05',
+        status: 'COMPLETED'
+      },
+      {
+        id: 'resp-c2',
+        ownerRole: 'CLIENT',
+        title: 'Provide Campus Floorplans & RFID Schema',
+        description: 'Deliver building blueprints and student ID RFID frequency specs.',
+        dueDate: '2026-08-10',
+        status: 'COMPLETED'
+      },
+      {
+        id: 'resp-c3',
+        ownerRole: 'CLIENT',
+        title: 'Review & Sign Off UI Prototypes',
+        description: 'Approve Figma wireframes within the agreed 5 business day review SLA.',
+        dueDate: '2026-08-25',
+        status: 'COMPLETED'
+      },
+      {
+        id: 'resp-c4',
+        ownerRole: 'CLIENT',
+        title: 'Provide External Payment Gateway API Keys',
+        description: 'Supply production Stripe/Razorpay webhook secret tokens.',
+        dueDate: '2026-09-14',
+        status: 'COMPLETED'
+      },
+      {
+        id: 'resp-c5',
+        ownerRole: 'CLIENT',
+        title: 'Conduct User Acceptance Testing (UAT)',
+        description: 'Designate 3 campus administrators for formal acceptance testing.',
+        dueDate: '2026-09-26',
+        status: 'PENDING'
+      },
+      {
+        id: 'resp-c6',
+        ownerRole: 'CLIENT',
+        title: 'Disburse Triggered Commercial Milestones',
+        description: 'Release verified payment tranches within 7 business days of trigger.',
+        dueDate: '2026-09-30',
+        status: 'PENDING'
+      },
+      {
+        id: 'resp-m1',
+        ownerRole: 'MANAGER',
+        title: 'Resource Allocation & Sprint Planning',
+        description: 'Assign backend, frontend, and DevOps engineers with capacity allocation.',
+        dueDate: '2026-08-01',
+        status: 'COMPLETED'
+      },
+      {
+        id: 'resp-m2',
+        ownerRole: 'MANAGER',
+        title: 'Maintain Project Baseline & Variance Radar',
+        description: 'Audit critical path delays and log verified blocking dependencies.',
+        dueDate: 'Ongoing',
+        status: 'ACTIVE'
+      },
+      {
+        id: 'resp-m3',
+        ownerRole: 'MANAGER',
+        title: 'Conduct Bi-Weekly Stakeholder Reviews',
+        description: 'Prepare executive summaries and risk registers for the Client Council.',
+        dueDate: 'Bi-Weekly',
+        status: 'ACTIVE'
+      },
+      {
+        id: 'resp-m4',
+        ownerRole: 'MANAGER',
+        title: 'Enact Baseline Amendments on Variance',
+        description: 'Submit formal amendment requests with clear delay attribution.',
+        dueDate: 'As Needed',
+        status: 'ACTIVE'
+      },
+      {
+        id: 'resp-d1',
+        ownerRole: 'DEVELOPER',
+        title: 'Task Execution & Automated Unit Testing',
+        description: 'Write clean, test-covered code meeting defined acceptance requirements.',
+        dueDate: 'Sprint Milestones',
+        status: 'IN_PROGRESS'
+      },
+      {
+        id: 'resp-d2',
+        ownerRole: 'DEVELOPER',
+        title: 'Daily Progress & Blocker Transparency',
+        description: 'Report blockers immediately with root cause context to avoid silent slippage.',
+        dueDate: 'Daily',
+        status: 'ACTIVE'
+      },
+      {
+        id: 'resp-d3',
+        ownerRole: 'DEVELOPER',
+        title: 'Technical Documentation & Swagger Specs',
+        description: 'Maintain versioned API documentation and deployment guides.',
+        dueDate: 'Milestone 4',
+        status: 'IN_PROGRESS'
+      }
+    ],
+    amendments: [
+      {
+        id: 'amend-1',
+        amendmentNumber: 1,
+        title: 'Staging Database Performance Clustering',
+        changeCategory: 'SCOPE',
+        category: 'SCOPE',
+        reason: 'Increased initial sensor load required multi-node Redis caching cluster.',
+        oldValue: 'Single PostgreSQL instance for all telemetry ingestion',
+        newValue: 'PostgreSQL partitioned tables + Redis distributed cache layer',
+        requestedBy: 'Ishaan Mantri (PM)',
+        requestedDate: '2026-08-18',
+        reviewedBy: 'David Vance (Client)',
+        status: 'APPROVED',
+        approvedAt: '2026-08-20T14:00:00Z',
+        effectiveDate: '2026-08-20'
+      },
+      {
+        id: 'amend-2',
+        amendmentNumber: 2,
+        title: 'Schedule Compensation for Cloud API Dependency Delay',
+        changeCategory: 'DEADLINE',
+        category: 'DEADLINE',
+        reason: 'Client external API credentials delivered on 14 Sep instead of 10 Sep (4 verified blocking days).',
+        oldValue: 'Target Completion: 30 September 2026',
+        newValue: 'Adjusted Target: 04 October 2026 (+4 business days schedule extension)',
+        requestedBy: 'Ishaan Mantri (PM)',
+        requestedDate: '2026-09-15',
+        reviewedBy: 'David Vance (Client)',
+        status: 'APPROVED',
+        approvedAt: '2026-09-16T10:30:00Z',
+        effectiveDate: '2026-09-16'
+      }
+    ]
+  },
+  2: {
+    id: 'ag-p2-2026',
+    projectId: 2,
+    projectKey: 'IX-CIVIC',
+    projectName: 'Citizen Service & Civic Portal 2.0',
+    version: 1,
+    status: 'LOCKED',
+    totalValue: 14000,
+    currency: 'USD',
+    effectiveDate: '2026-08-10',
+    baselineStartDate: '2026-08-10',
+    baselineEndDate: '2026-10-15',
+    currentForecastEndDate: '2026-10-19',
+    verifiedBlockingDelayDays: 4,
+    delayAttribution: 'Department API SLA delay (+4 days)',
+    reviewPeriodDays: 5,
+    approvalPeriodDays: 3,
+    scopeObjective: 'Unified citizen grievance redressal platform with automated NLP routing and SLA monitoring.',
+    includedModules: '• Grievance Ingestion Engine\n• NLP Automated Categorization\n• WhatsApp & SMS Notifications\n• SLA Escalation Engine',
+    excludedModules: '• Municipal legacy billing migration\n• Hardware telephony call center setup',
+    assumptions: '• Municipal dept provides API endpoints on Day 1\n• Kafka broker provisioned with 3-node cluster',
+    agreedDeliverables: '1. Architecture Document\n2. React Web Portal\n3. Notification Microservice\n4. Admin Dashboard',
+    paymentMilestones: [
+      { id: 'pay-21', title: 'Milestone 1: Initiation', triggerType: 'PERCENTAGE', triggerValue: 20, paymentPercentage: 20, paymentAmount: 2800, status: 'PAID' },
+      { id: 'pay-22', title: 'Milestone 2: NLP Engine', triggerType: 'PERCENTAGE', triggerValue: 50, paymentPercentage: 30, paymentAmount: 4200, status: 'PAID' },
+      { id: 'pay-23', title: 'Milestone 3: Portal Integration', triggerType: 'PERCENTAGE', triggerValue: 80, paymentPercentage: 30, paymentAmount: 4200, status: 'PENDING' },
+      { id: 'pay-24', title: 'Milestone 4: Acceptance', triggerType: 'PERCENTAGE', triggerValue: 100, paymentPercentage: 20, paymentAmount: 2800, status: 'PENDING' }
+    ],
+    responsibilities: [
+      { id: 'r2-1', ownerRole: 'CLIENT', title: 'Provide Departmental APIs', dueDate: '2026-08-15', status: 'COMPLETED' },
+      { id: 'r2-2', ownerRole: 'MANAGER', title: 'Sprint Delivery Management', dueDate: 'Ongoing', status: 'ACTIVE' },
+      { id: 'r2-3', ownerRole: 'DEVELOPER', title: 'NLP Model Integration', dueDate: 'Milestone 2', status: 'COMPLETED' }
+    ],
+    amendments: []
+  }
+};
+
 export const THEMES = [
   { id: 'indigo', name: 'Intelix Command Dark', color: '#4F7CFF', badge: 'Official' },
   { id: 'emerald', name: 'Cyber Emerald', color: '#18C997', badge: 'Clean Tech' },
@@ -661,6 +954,11 @@ export function ProjectProvider({ children }) {
     return saved ? JSON.parse(saved) : INITIAL_USERS;
   });
 
+  const [agreements, setAgreements] = useState(() => {
+    const saved = localStorage.getItem('intelix_agreements_v3');
+    return saved ? JSON.parse(saved) : INITIAL_AGREEMENTS;
+  });
+
   const [toasts, setToasts] = useState([]);
 
   // UI Modals & Drawers
@@ -674,6 +972,10 @@ export function ProjectProvider({ children }) {
   const [activeView, setActiveView] = useState('Overview');
 
   // Persistence effects
+  useEffect(() => {
+    localStorage.setItem('intelix_agreements_v3', JSON.stringify(agreements));
+  }, [agreements]);
+
   useEffect(() => {
     localStorage.setItem('intelix_projects_v3', JSON.stringify(projects));
   }, [projects]);
@@ -1012,16 +1314,18 @@ export function ProjectProvider({ children }) {
     const task = tasks.find(t => t.id === id);
     if (!task) return;
 
+    const newBlocked = !task.blocked;
+
     // Sync blocker to Spring Boot backend
     if (isBackendConnected && typeof id === 'string' && id.includes('-')) {
-      api.toggleTaskBlocker(id, !task.blocked ? 'Flagged blocker from Kanban' : '').catch(err => console.warn('Backend blocker sync:', err));
+      api.toggleTaskBlocker(id, newBlocked, newBlocked ? (task.blockerReason || 'Flagged blocker from Kanban') : '').catch(err => console.warn('Backend blocker sync:', err));
     }
 
-    const newBlocked = !task.blocked;
     const updates = {
       blocked: newBlocked,
       status: newBlocked ? 'Blocked' : (task.status === 'Blocked' ? 'In Progress' : task.status)
     };
+
     
     const riskAnalysis = calculateLocalRiskScore({
       progress: task.progress,
@@ -1047,15 +1351,61 @@ export function ProjectProvider({ children }) {
     if (task) addActivity(`Deleted task "${task.title}"`, 'progress', 'Sprint');
   };
 
+  const checkAndTriggerPaymentMilestones = (projectId, currentProgress) => {
+    setAgreements(prev => {
+      const agreement = prev[projectId];
+      if (!agreement || !agreement.paymentMilestones) return prev;
+
+      let changed = false;
+      const updatedMilestones = agreement.paymentMilestones.map(pm => {
+        if (pm.status === 'PENDING' && pm.triggerType === 'PERCENTAGE' && currentProgress >= (pm.triggerValue || 0)) {
+          changed = true;
+          const notifMsg = `Payment threshold reached (${pm.title || 'Milestone'}). Commercial tranche of $${(pm.paymentAmount || 0).toLocaleString()} is now TRIGGERED and due.`;
+          const notif = {
+            id: Date.now() + Math.random(),
+            title: 'Payment Milestone Triggered',
+            desc: notifMsg,
+            type: 'PAYMENT',
+            time: 'Just now',
+            unread: true,
+            severity: 'HIGH',
+            linkUrl: `/projects/${projectId}/agreement`
+          };
+          setNotifications(nPrev => [notif, ...nPrev]);
+          return {
+            ...pm,
+            status: 'TRIGGERED',
+            triggeredAt: new Date().toISOString()
+          };
+        }
+        return pm;
+      });
+
+      if (changed) {
+        addActivity(`Commercial payment milestone triggered at ${currentProgress}% progress`, 'done', 'Commercial');
+        return {
+          ...prev,
+          [projectId]: {
+            ...agreement,
+            paymentMilestones: updatedMilestones,
+            updatedAt: new Date().toISOString()
+          }
+        };
+      }
+      return prev;
+    });
+  };
+
   const addProject = (proj) => {
+    const newId = Date.now();
     const newProj = {
-      id: Date.now(),
+      id: newId,
       name: proj.name,
       description: proj.description || 'Monitored Initiative',
       owner: proj.owner || activeRole.name,
       client: proj.client || 'Enterprise Stakeholder',
-      health: 88,
-      status: 'On Track',
+      health: 100,
+      status: 'Planning', // Pre-execution baseline agreement required
       priority: proj.priority || 'Medium',
       deadline: proj.deadline || '30 Oct 2026',
       startDate: proj.startDate || '01 Sep 2026',
@@ -1072,9 +1422,181 @@ export function ProjectProvider({ children }) {
       ministry: proj.ministry || 'Strategic Initiative'
     };
 
+    // Initialize pre-execution Project Agreement Draft
+    const newAgreement = {
+      id: `ag-${newId}`,
+      projectId: newId,
+      projectKey: `IX-${(proj.name || 'PROJ').substring(0, 4).toUpperCase()}`,
+      projectName: newProj.name,
+      version: 1,
+      status: 'DRAFT',
+      totalValue: newProj.budget || 10000,
+      currency: 'USD',
+      baselineStartDate: newProj.startDate,
+      baselineEndDate: newProj.deadline,
+      currentForecastEndDate: newProj.deadline,
+      verifiedBlockingDelayDays: 0,
+      delayAttribution: 'None',
+      reviewPeriodDays: 5,
+      approvalPeriodDays: 3,
+      scopeObjective: newProj.description,
+      includedModules: '• Core Ingestion Engine\n• User Portal & Authentication\n• Automated Telemetry\n• Payment Gateway Integration',
+      excludedModules: '• Out of scope legacy data cleanup\n• Custom physical installations',
+      assumptions: '• Staging credentials provided on Day 1\n• Stakeholder reviews returned in 5-day SLA',
+      agreedDeliverables: '1. Architecture & API Specifications\n2. Reactive Web Dashboard\n3. Staging Deployment & Test Report',
+      createdByName: activeRole.name,
+      createdAt: new Date().toISOString(),
+      milestones: [
+        { id: `agm-${newId}-1`, name: 'Architecture & Ingestion Setup', targetDate: newProj.startDate, deliverables: 'API Contract & Database migrations', completionRequirement: 'All test suites pass', acceptanceCriteria: 'Client approval' },
+        { id: `agm-${newId}-2`, name: 'Core Feature Integration', targetDate: newProj.deadline, deliverables: 'Functional modules & payment triggers', completionRequirement: 'Integration benchmarks verified', acceptanceCriteria: 'UAT verification' }
+      ],
+      paymentMilestones: [
+        { id: `pay-${newId}-1`, title: 'Milestone 1: Initiation Sign-Off', triggerType: 'PERCENTAGE', triggerValue: 20, paymentPercentage: 30, paymentAmount: (newProj.budget || 10000) * 0.3, status: 'PENDING' },
+        { id: `pay-${newId}-2`, title: 'Milestone 2: Final Acceptance', triggerType: 'PERCENTAGE', triggerValue: 100, paymentPercentage: 70, paymentAmount: (newProj.budget || 10000) * 0.7, status: 'PENDING' }
+      ],
+      responsibilities: [
+        { id: `resp-${newId}-c1`, ownerRole: 'CLIENT', title: 'Provide Staging Environment & API Access', dueDate: newProj.startDate, status: 'PENDING' },
+        { id: `resp-${newId}-m1`, ownerRole: 'MANAGER', title: 'Maintain Project Baseline & Resource Allocation', dueDate: 'Ongoing', status: 'ACTIVE' },
+        { id: `resp-${newId}-d1`, ownerRole: 'DEVELOPER', title: 'Task Execution & Unit Testing', dueDate: 'Sprint Milestones', status: 'PENDING' }
+      ],
+      amendments: []
+    };
+
+    setAgreements(prev => ({ ...prev, [newId]: newAgreement }));
     setProjects(prev => [newProj, ...prev]);
-    showToast(`Initiative "${newProj.name}" launched!`, 'success');
-    addActivity(`Launched initiative "${newProj.name}"`, 'done', 'Project');
+    showToast(`Initiative "${newProj.name}" created! Terms & Conditions baseline agreement is now in Draft.`, 'success');
+    addActivity(`Created project "${newProj.name}" - baseline agreement in draft`, 'done', 'Project');
+    
+    if (activeRole.id === 'manager') {
+      setActiveView('Agreement');
+    }
+  };
+
+  const [activeDraftId, setActiveDraftId] = useState(null);
+  const [projectDrafts, setProjectDrafts] = useState(() => {
+    try {
+      const saved = localStorage.getItem('intelix_project_drafts_v1');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('intelix_project_drafts_v1', JSON.stringify(projectDrafts));
+  }, [projectDrafts]);
+
+  const submitInitiationWizard = async (payload) => {
+    try {
+      let res;
+      if (isBackendConnected) {
+        try {
+          res = await api.initiateProject(payload);
+        } catch (apiErr) {
+          console.warn("Backend initiation endpoint returned error, saving locally:", apiErr);
+        }
+      }
+
+      const isSubmit = payload.action === 'SUBMIT_TO_CLIENT';
+      const projId = res?.projectId || payload.projectId || `prj-${Date.now()}`;
+      const projectKey = res?.projectKey || payload.basicInfo?.projectKey || `PRJ-${Math.floor(100 + Math.random() * 900)}`;
+      const projectName = res?.name || payload.basicInfo?.title || 'Untitled Initiative';
+      const agreementId = res?.agreementId || `ag-${projId}`;
+
+      const newProj = {
+        id: projId,
+        projectKey: projectKey,
+        name: projectName,
+        description: payload.basicInfo?.description || '',
+        projectObjective: payload.basicInfo?.projectObjective || '',
+        category: payload.basicInfo?.category || 'General',
+        projectType: payload.basicInfo?.projectType || 'Fixed Price',
+        timezone: payload.basicInfo?.timezone || 'UTC+05:30',
+        owner: activeRole.name,
+        client: payload.client?.name || 'Client Stakeholder',
+        health: 100,
+        status: isSubmit ? 'Agreement Pending' : 'Draft Setup',
+        priority: payload.basicInfo?.priority || 'Medium',
+        deadline: payload.basicInfo?.endDate || '30 Nov 2026',
+        startDate: payload.basicInfo?.startDate || '01 Oct 2026',
+        progress: 0,
+        budget: payload.payments?.totalValue || payload.basicInfo?.budget || 10000,
+        tags: payload.basicInfo?.tags ? (Array.isArray(payload.basicInfo.tags) ? payload.basicInfo.tags : payload.basicInfo.tags.split(',').map(t => t.trim())) : ['Strategic', 'Baseline'],
+        tasks: payload.tasks?.length || 0,
+        done: 0,
+        risks: 0,
+        members: payload.teams?.reduce((acc, t) => acc + (t.memberIds?.length || 0), 0) || 5,
+        predicted: payload.basicInfo?.endDate || '30 Nov 2026',
+        delayDays: 0,
+        currentWizardStep: payload.currentStep || 1
+      };
+
+      const newAgreement = {
+        id: agreementId,
+        projectId: projId,
+        projectKey: projectKey,
+        projectName: projectName,
+        version: 1,
+        status: isSubmit ? 'SENT_TO_CLIENT' : 'DRAFT',
+        totalValue: payload.payments?.totalValue || 10000,
+        currency: payload.payments?.currency || 'USD',
+        baselineStartDate: payload.basicInfo?.startDate,
+        baselineEndDate: payload.basicInfo?.endDate,
+        currentForecastEndDate: payload.basicInfo?.endDate,
+        verifiedBlockingDelayDays: 0,
+        delayAttribution: payload.terms?.delayAttribution || 'None',
+        reviewPeriodDays: payload.terms?.reviewPeriodDays || 5,
+        approvalPeriodDays: payload.terms?.approvalPeriodDays || 3,
+        scopeObjective: payload.terms?.scopeObjective || payload.basicInfo?.description || '',
+        includedModules: payload.terms?.includedModules || '',
+        excludedModules: payload.terms?.excludedModules || '',
+        assumptions: payload.terms?.assumptions || '',
+        agreedDeliverables: payload.terms?.agreedDeliverables || '',
+        createdByName: activeRole.name,
+        approvedByManagerName: isSubmit ? activeRole.name : null,
+        approvedByClientName: null,
+        createdAt: new Date().toISOString(),
+        milestones: payload.milestones || [],
+        paymentMilestones: payload.payments?.paymentMilestones || [],
+        responsibilities: payload.responsibilities || [],
+        amendments: []
+      };
+
+      setAgreements(prev => ({ ...prev, [projId]: newAgreement }));
+
+      if (!isSubmit) {
+        setProjectDrafts(prev => {
+          const filtered = prev.filter(d => d.projectId !== projId);
+          return [{
+            projectId: projId,
+            projectKey: projectKey,
+            name: projectName,
+            description: payload.basicInfo?.description || '',
+            currentStep: payload.currentStep || 1,
+            status: 'DRAFT_SETUP',
+            clientName: payload.client?.name || 'Not Selected',
+            budget: payload.payments?.totalValue || payload.basicInfo?.budget || 10000,
+            updatedAt: new Date().toISOString(),
+            rawPayload: payload
+          }, ...filtered];
+        });
+        showToast(`Draft for "${projectName}" saved at Step ${payload.currentStep}!`, 'info');
+      } else {
+        setProjectDrafts(prev => prev.filter(d => d.projectId !== projId));
+        setProjects(prev => {
+          const filtered = prev.filter(p => p.id !== projId);
+          return [newProj, ...filtered];
+        });
+        showToast(`Project "${projectName}" submitted to client for agreement review!`, 'success');
+        addActivity(`Initiated project "${projectName}" - sent to client for agreement review`, 'done', 'Project');
+      }
+
+      return { success: true, projectId: projId, ...res };
+    } catch (err) {
+      console.error("Initiation error:", err);
+      showToast(err.message || 'Error processing initiation wizard', 'error');
+      return { success: false, message: err.message };
+    }
   };
 
   const recalculateProjectHealth = (projectId) => {
@@ -1091,6 +1613,9 @@ export function ProjectProvider({ children }) {
       const health = Math.max(25, Math.min(100, Math.round(100 - (riskCount * 10) + (avgProgress * 0.12))));
       const status = health >= 75 ? 'On Track' : health >= 55 ? 'Needs Attention' : 'Critical';
 
+      // Check payment triggers
+      checkAndTriggerPaymentMilestones(projectId, avgProgress);
+
       return {
         ...p,
         tasks: projTasks.length,
@@ -1101,6 +1626,223 @@ export function ProjectProvider({ children }) {
         status
       };
     }));
+  };
+
+  const getAgreementForProject = (projectId) => {
+    return agreements[projectId] || agreements[1] || null;
+  };
+
+  const saveProjectAgreement = async (projectId, agreementData) => {
+    const existing = agreements[projectId] || {
+      id: `ag-${projectId}`,
+      projectId: projectId,
+      version: 1,
+      status: 'DRAFT',
+      currency: 'USD',
+      createdAt: new Date().toISOString()
+    };
+
+    const updated = {
+      ...existing,
+      ...agreementData,
+      id: existing.id || `ag-${projectId}`,
+      projectId: projectId,
+      updatedAt: new Date().toISOString()
+    };
+
+    setAgreements(prev => ({ ...prev, [projectId]: updated }));
+    addActivity(`Configured project baseline agreement v${updated.version || 1}`, 'progress', 'Agreement');
+    return updated;
+  };
+
+  const submitAgreementToClient = async (agreementId) => {
+    setAgreements(prev => {
+      const next = { ...prev };
+      for (const k in next) {
+        if (next[k].id === agreementId || String(next[k].projectId) === String(agreementId)) {
+          next[k] = {
+            ...next[k],
+            status: 'SENT_TO_CLIENT',
+            approvedByManagerName: activeRole.name,
+            updatedAt: new Date().toISOString()
+          };
+          const notif = {
+            id: Date.now(),
+            title: 'Project Agreement Submitted for Review',
+            desc: `Manager ${activeRole.name} submitted baseline terms for project review.`,
+            type: 'AGREEMENT',
+            time: 'Just now',
+            unread: true,
+            severity: 'HIGH',
+            linkUrl: '/projects/' + k + '/agreement'
+          };
+          setNotifications(nPrev => [notif, ...nPrev]);
+        }
+      }
+      return next;
+    });
+    addActivity(`Submitted project baseline agreement for Client review`, 'done', 'Agreement');
+  };
+
+  const reviewAgreement = async (agreementId, { decision, comments }) => {
+    const isApproved = decision === 'APPROVED' || decision === 'APPROVE';
+    setAgreements(prev => {
+      const next = { ...prev };
+      for (const k in next) {
+        if (next[k].id === agreementId || String(next[k].projectId) === String(agreementId)) {
+          next[k] = {
+            ...next[k],
+            status: isApproved ? 'CLIENT_APPROVED' : 'CHANGES_REQUESTED',
+            approvedByClientName: isApproved ? activeRole.name : next[k].approvedByClientName,
+            approvedAt: isApproved ? new Date().toISOString() : null,
+            effectiveDate: isApproved ? new Date().toISOString().split('T')[0] : null,
+            reviewNotes: comments,
+            updatedAt: new Date().toISOString()
+          };
+          const notif = {
+            id: Date.now(),
+            title: isApproved ? 'Project Agreement Approved by Client' : 'Changes Requested on Agreement',
+            desc: isApproved ? `Client ${activeRole.name} approved the project baseline agreement.` : `Client requested changes: ${comments || 'Review scope'}`,
+            type: 'AGREEMENT',
+            time: 'Just now',
+            unread: true,
+            severity: isApproved ? 'SUCCESS' : 'MEDIUM',
+            linkUrl: '/projects/' + k + '/agreement'
+          };
+          setNotifications(nPrev => [notif, ...nPrev]);
+        }
+      }
+      return next;
+    });
+    addActivity(`${isApproved ? 'Client approved' : 'Client requested changes on'} project agreement`, isApproved ? 'done' : 'risk', 'Agreement');
+  };
+
+  const lockAgreement = async (agreementId) => {
+    setAgreements(prev => {
+      const next = { ...prev };
+      for (const k in next) {
+        if (next[k].id === agreementId || String(next[k].projectId) === String(agreementId)) {
+          next[k] = {
+            ...next[k],
+            status: 'LOCKED',
+            updatedAt: new Date().toISOString()
+          };
+          setProjects(pPrev => pPrev.map(p => {
+            if (String(p.id) === String(next[k].projectId)) {
+              return { ...p, status: 'On Track' };
+            }
+            return p;
+          }));
+          const notif = {
+            id: Date.now(),
+            title: 'Project Baseline Sealed & Activated',
+            desc: `Project baseline terms are locked. Sprint task execution is officially activated!`,
+            type: 'AGREEMENT',
+            time: 'Just now',
+            unread: true,
+            severity: 'SUCCESS',
+            linkUrl: '/projects/' + k + '/agreement'
+          };
+          setNotifications(nPrev => [notif, ...nPrev]);
+        }
+      }
+      return next;
+    });
+    addActivity(`Locked project baseline and activated execution`, 'done', 'Agreement');
+  };
+
+  const recordPayment = async (paymentId) => {
+    setAgreements(prev => {
+      const next = { ...prev };
+      for (const k in next) {
+        if (next[k].paymentMilestones) {
+          next[k].paymentMilestones = next[k].paymentMilestones.map(pm => {
+            if (pm.id === paymentId) {
+              return {
+                ...pm,
+                status: 'PAID',
+                paidAt: new Date().toISOString()
+              };
+            }
+            return pm;
+          });
+        }
+      }
+      return next;
+    });
+    addActivity(`Confirmed and recorded commercial payment tranche #${paymentId}`, 'done', 'Commercial');
+  };
+
+  const requestAgreementAmendment = async (agreementId, amendmentData) => {
+    setAgreements(prev => {
+      const next = { ...prev };
+      for (const k in next) {
+        if (next[k].id === agreementId || String(next[k].projectId) === String(agreementId)) {
+          const currentAmendments = next[k].amendments || [];
+          const nextNum = currentAmendments.length + 1;
+          const newAmend = {
+            id: `amend-${Date.now()}`,
+            amendmentNumber: nextNum,
+            title: amendmentData.title || `Amendment #${nextNum}`,
+            category: amendmentData.changeCategory || 'SCOPE',
+            changeCategory: amendmentData.changeCategory || 'SCOPE',
+            reason: amendmentData.reason || 'Variance adjustment',
+            oldValue: amendmentData.oldValue || 'N/A',
+            newValue: amendmentData.newValue || 'N/A',
+            requestedBy: activeRole.name,
+            requestedDate: new Date().toISOString().split('T')[0],
+            status: 'REQUESTED'
+          };
+          next[k] = {
+            ...next[k],
+            amendments: [...currentAmendments, newAmend],
+            updatedAt: new Date().toISOString()
+          };
+
+          const notif = {
+            id: Date.now(),
+            title: 'Baseline Amendment Requested',
+            desc: `${activeRole.name} submitted Amendment #${nextNum}: ${newAmend.title}`,
+            type: 'AMENDMENT',
+            time: 'Just now',
+            unread: true,
+            severity: 'HIGH',
+            linkUrl: '/projects/' + k + '/agreement'
+          };
+          setNotifications(nPrev => [notif, ...nPrev]);
+        }
+      }
+      return next;
+    });
+    addActivity(`Requested formal baseline amendment`, 'progress', 'Agreement');
+  };
+
+  const reviewAgreementAmendment = async (amendmentId, { approved, reviewNotes }) => {
+    setAgreements(prev => {
+      const next = { ...prev };
+      for (const k in next) {
+        if (next[k].amendments) {
+          next[k].amendments = next[k].amendments.map(am => {
+            if (am.id === amendmentId) {
+              return {
+                ...am,
+                status: approved ? 'APPROVED' : 'REJECTED',
+                reviewedBy: activeRole.name,
+                approvedAt: approved ? new Date().toISOString() : null,
+                reviewNotes: reviewNotes
+              };
+            }
+            return am;
+          });
+          if (approved) {
+            next[k].version = (next[k].version || 1) + 1;
+            next[k].updatedAt = new Date().toISOString();
+          }
+        }
+      }
+      return next;
+    });
+    addActivity(`${approved ? 'Approved and enacted' : 'Rejected'} baseline amendment #${amendmentId}`, approved ? 'done' : 'risk', 'Agreement');
   };
 
   const addDependency = (dep) => {
@@ -1594,11 +2336,31 @@ export function ProjectProvider({ children }) {
         uploadDocument,
         markNotificationRead,
         markAllNotificationsRead,
-        resetToDefaults
+        resetToDefaults,
+        syncFromBackend,
+
+        // Project Initiation & Governance Agreement Methods
+        agreements,
+        getAgreementForProject,
+        saveProjectAgreement,
+        submitAgreementToClient,
+        reviewAgreement,
+        lockAgreement,
+        recordPayment,
+        requestAgreementAmendment,
+        reviewAgreementAmendment,
+
+        // Initiation Wizard & Drafts
+        activeDraftId,
+        setActiveDraftId,
+        projectDrafts,
+        setProjectDrafts,
+        submitInitiationWizard
       }}
     >
       {children}
     </ProjectContext.Provider>
+
   );
 }
 

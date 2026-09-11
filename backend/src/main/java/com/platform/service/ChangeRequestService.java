@@ -54,7 +54,7 @@ public class ChangeRequestService {
         cr.setProjectId(dto.getProjectId());
         cr.setTitle(dto.getTitle());
         cr.setDescription(dto.getDescription());
-        cr.setModule(dto.getModule());
+        cr.setModule(dto.getModule() != null && !dto.getModule().trim().isEmpty() ? dto.getModule() : "General");
         cr.setPriority(dto.getPriority() != null ? dto.getPriority() : Task.Priority.MEDIUM);
         cr.setRequestedBy(client);
         cr.setStatus(ChangeRequest.ChangeRequestStatus.SUBMITTED);
@@ -64,16 +64,19 @@ public class ChangeRequestService {
         auditService.log(project.getId(), client, "CHANGE_REQUEST_SUBMITTED", "CHANGE_REQUEST", saved.getId(),
                 null, saved.getTitle(), "Client submitted change request " + saved.getCrKey());
 
-        if (project.getProjectManager() != null) {
-            notificationService.sendNotification(
-                    project.getProjectManager().getId(),
-                    "New Change Request: " + saved.getCrKey(),
-                    String.format("Client %s submitted CR: %s", client.getFullName(), saved.getTitle()),
-                    Notification.Severity.WARNING,
-                    "CHANGE_REQUEST",
-                    "/projects/" + project.getId() + "/change-requests"
-            );
-        }
+        notificationService.sendToProjectManagers(
+                project.getId(),
+                com.platform.entity.NotificationType.CHANGE_REQUEST_CREATED,
+                "New Change Request: " + saved.getCrKey(),
+                String.format("Client %s submitted CR: %s", client.getFullName(), saved.getTitle()),
+                Notification.Severity.WARNING,
+                "CHANGE_REQUEST",
+                saved.getId(),
+                "/projects/" + project.getId() + "/change-requests",
+                java.util.Map.of("crKey", saved.getCrKey(), "crId", saved.getId(), "priority", saved.getPriority().name())
+        );
+
+        notificationService.publishProjectEvent(project.getId(), "CHANGE_REQUEST_CREATED", "CHANGE_REQUEST", saved.getId(), saved);
 
         return saved;
     }
@@ -89,14 +92,29 @@ public class ChangeRequestService {
         auditService.log(cr.getProjectId(), manager, "CHANGE_REQUEST_REVIEWED", "CHANGE_REQUEST", cr.getId(),
                 null, dto.getStatus().name(), "Manager responded to CR " + cr.getCrKey() + ": " + dto.getStatus());
 
-        notificationService.sendNotification(
+        com.platform.entity.NotificationType notifType = switch (dto.getStatus()) {
+            case APPROVED -> com.platform.entity.NotificationType.CHANGE_REQUEST_APPROVED;
+            case REJECTED -> com.platform.entity.NotificationType.CHANGE_REQUEST_REJECTED;
+            case NEEDS_CLARIFICATION -> com.platform.entity.NotificationType.CHANGE_REQUEST_NEEDS_CLARIFICATION;
+            default -> com.platform.entity.NotificationType.CHANGE_REQUEST_CREATED;
+        };
+
+        Notification.Severity sev = dto.getStatus() == ChangeRequest.ChangeRequestStatus.APPROVED ? Notification.Severity.SUCCESS : Notification.Severity.WARNING;
+
+        notificationService.sendToUser(
                 cr.getRequestedBy().getId(),
-                "Change Request Updated: " + cr.getCrKey(),
-                "Your change request status is now: " + dto.getStatus().name(),
-                Notification.Severity.INFO,
+                notifType,
+                "Change Request " + dto.getStatus().name() + ": " + cr.getCrKey(),
+                "Your change request was reviewed: " + (dto.getManagerResponse() != null ? dto.getManagerResponse() : dto.getStatus().name()),
+                sev,
+                cr.getProjectId(),
                 "CHANGE_REQUEST",
-                "/projects/" + cr.getProjectId() + "/change-requests"
+                cr.getId(),
+                "/projects/" + cr.getProjectId() + "/change-requests",
+                java.util.Map.of("crKey", cr.getCrKey(), "status", dto.getStatus().name())
         );
+
+        notificationService.publishProjectEvent(cr.getProjectId(), "CHANGE_REQUEST_UPDATED", "CHANGE_REQUEST", saved.getId(), saved);
 
         return saved;
     }
@@ -122,6 +140,9 @@ public class ChangeRequestService {
         auditService.log(cr.getProjectId(), manager, "CR_CONVERTED_TO_TASK", "TASK", createdTask.getId(),
                 cr.getCrKey(), createdTask.getTaskKey(), "Converted CR " + cr.getCrKey() + " into task " + createdTask.getTaskKey());
 
+        notificationService.publishProjectEvent(cr.getProjectId(), "CHANGE_REQUEST_UPDATED", "CHANGE_REQUEST", cr.getId(), cr);
+
         return createdTask;
     }
 }
+

@@ -25,16 +25,20 @@ public class RiskEngineService {
     private final TaskDependencyRepository dependencyRepository;
     private final RiskAssessmentRepository riskAssessmentRepository;
     private final ProjectRepository projectRepository;
+    private final NotificationService notificationService;
 
     public RiskEngineService(TaskRepository taskRepository,
                              TaskDependencyRepository dependencyRepository,
                              RiskAssessmentRepository riskAssessmentRepository,
-                             ProjectRepository projectRepository) {
+                             ProjectRepository projectRepository,
+                             NotificationService notificationService) {
         this.taskRepository = taskRepository;
         this.dependencyRepository = dependencyRepository;
         this.riskAssessmentRepository = riskAssessmentRepository;
         this.projectRepository = projectRepository;
+        this.notificationService = notificationService;
     }
+
 
     public static class TaskRiskResult {
         public int score;
@@ -192,10 +196,26 @@ public class RiskEngineService {
         int count = 0;
 
         for (Task task : tasks) {
+            RiskLevel prevLevel = task.getRiskLevel();
             TaskRiskResult tr = calculateTaskRisk(task);
             task.setRiskScore(tr.score);
             task.setRiskLevel(tr.level);
             taskRepository.save(task);
+
+            // Threshold transition alert: LOW -> HIGH or sudden jump into HIGH
+            if (prevLevel != null && prevLevel != tr.level && tr.level == RiskLevel.HIGH && prevLevel != RiskLevel.HIGH) {
+                notificationService.sendToProjectManagers(
+                        projectId,
+                        com.platform.entity.NotificationType.DEPENDENCY_AT_RISK,
+                        "High Risk Alert: " + task.getTaskKey(),
+                        "Task '" + task.getTitle() + "' risk level rose to " + tr.level + " (" + tr.score + "/100).",
+                        com.platform.entity.Notification.Severity.CRITICAL,
+                        "TASK",
+                        task.getId(),
+                        "/tasks/" + task.getId(),
+                        java.util.Map.of("taskKey", task.getTaskKey(), "riskScore", tr.score, "riskLevel", tr.level.name())
+                );
+            }
 
             // Save history snapshot
             RiskAssessment ra = new RiskAssessment();
@@ -225,10 +245,72 @@ public class RiskEngineService {
         final int health = Math.max(10, Math.min(100, 100 - (int)(avgRisk * 0.75 + overdueCount * 8)));
 
         projectRepository.findById(projectId).ifPresent(p -> {
-            p.setRiskLevel(avgRisk <= 30 ? RiskLevel.LOW : (avgRisk <= 60 ? RiskLevel.MEDIUM : RiskLevel.HIGH));
+            RiskLevel prevRisk = p.getRiskLevel();
+            String prevStatus = p.getHealthStatus();
+
+            RiskLevel newRiskLevel = avgRisk <= 30 ? RiskLevel.LOW : (avgRisk <= 60 ? RiskLevel.MEDIUM : RiskLevel.HIGH);
+            String newHealthStatus = health >= 80 ? "HEALTHY" : (health >= 50 ? "AT_RISK" : "CRITICAL");
+
+            p.setRiskLevel(newRiskLevel);
             p.setHealthScore(health);
-            p.setHealthStatus(health >= 80 ? "HEALTHY" : (health >= 50 ? "AT_RISK" : "CRITICAL"));
+            p.setHealthStatus(newHealthStatus);
             projectRepository.save(p);
+
+            // Trigger project-level risk notifications on threshold crossing
+            if (prevRisk != null && prevRisk != newRiskLevel && newRiskLevel == RiskLevel.HIGH) {
+                notificationService.sendToProjectManagers(
+                        projectId,
+                        com.platform.entity.NotificationType.PROJECT_AT_RISK,
+                        "Project At High Risk: " + p.getName(),
+                        "Overall project risk level escalated to HIGH (Average score: " + avgRisk + "/100).",
+                        com.platform.entity.Notification.Severity.CRITICAL,
+                        "PROJECT",
+                        projectId,
+                        "/projects/" + projectId,
+                        java.util.Map.of("riskScore", avgRisk, "healthScore", health)
+                );
+            }
+
+            if (prevStatus != null && !prevStatus.equals(newHealthStatus) && "CRITICAL".equals(newHealthStatus)) {
+                notificationService.sendToProjectManagers(
+                        projectId,
+                        com.platform.entity.NotificationType.PROJECT_CRITICAL,
+                        "CRITICAL: Project Health Alert",
+                        "Project '" + p.getName() + "' health score has fallen to CRITICAL (" + health + "/100).",
+                        com.platform.entity.Notification.Severity.CRITICAL,
+                        "PROJECT",
+                        projectId,
+                        "/projects/" + projectId,
+                        java.util.Map.of("healthScore", health)
+                );
+                notificationService.sendToClient(
+                        projectId,
+                        com.platform.entity.NotificationType.PROJECT_CRITICAL,
+                        "Project Status Update: " + p.getName(),
+                        "Schedule delay risks detected for " + p.getName() + ". Our team is reviewing mitigation steps.",
+                        com.platform.entity.Notification.Severity.WARNING,
+                        "PROJECT",
+                        projectId,
+                        "/projects/" + projectId,
+                        java.util.Map.of("healthScore", health)
+                );
+            }
+
+            // Real-time project telemetry broadcast for live dashboard metric updates
+            notificationService.publishProjectEvent(
+                    projectId,
+                    "RISK_RECALCULATED",
+                    "PROJECT",
+                    projectId,
+                    java.util.Map.of(
+                            "projectId", projectId,
+                            "riskScore", avgRisk,
+                            "riskLevel", newRiskLevel.name(),
+                            "healthScore", health,
+                            "healthStatus", newHealthStatus
+                    )
+            );
         });
     }
 }
+

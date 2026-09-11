@@ -51,18 +51,29 @@ public class ApprovalService {
         auditService.log(approval.getProjectId(), client, "DELIVERABLE_DECISION", "DELIVERABLE", saved.getId(),
                 "PENDING", decision.getStatus().name(), "Client decided: " + decision.getStatus() + " on " + saved.getDeliverableName());
 
-        Project project = projectRepository.findById(approval.getProjectId()).orElse(null);
-        if (project != null && project.getProjectManager() != null) {
-            notificationService.sendNotification(
-                    project.getProjectManager().getId(),
-                    "Deliverable Sign-off: " + saved.getDeliverableName(),
-                    String.format("%s marked '%s' as %s", client.getFullName(), saved.getDeliverableName(), decision.getStatus().name()),
-                    decision.getStatus() == DeliverableApproval.ApprovalStatus.APPROVED ? Notification.Severity.SUCCESS : Notification.Severity.WARNING,
-                    "APPROVAL",
-                    "/projects/" + project.getId() + "/approvals"
-            );
-        }
+        com.platform.entity.NotificationType type = decision.getStatus() == DeliverableApproval.ApprovalStatus.APPROVED 
+                ? com.platform.entity.NotificationType.DELIVERABLE_APPROVED 
+                : com.platform.entity.NotificationType.CHANGES_REQUESTED;
+
+        Notification.Severity sev = decision.getStatus() == DeliverableApproval.ApprovalStatus.APPROVED 
+                ? Notification.Severity.SUCCESS 
+                : Notification.Severity.WARNING;
+
+        notificationService.sendToProjectManagers(
+                approval.getProjectId(),
+                type,
+                "Deliverable Sign-off: " + saved.getDeliverableName(),
+                String.format("%s marked '%s' as %s", client.getFullName(), saved.getDeliverableName(), decision.getStatus().name()),
+                sev,
+                "APPROVAL",
+                saved.getId(),
+                "/projects/" + approval.getProjectId() + "/approvals",
+                java.util.Map.of("deliverableName", saved.getDeliverableName(), "status", decision.getStatus().name())
+        );
+
+        notificationService.publishProjectEvent(approval.getProjectId(), "DELIVERABLE_DECISION", "APPROVAL", saved.getId(), saved);
 
         return saved;
     }
 }
+
